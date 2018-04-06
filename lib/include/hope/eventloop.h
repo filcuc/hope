@@ -1,5 +1,4 @@
-#ifndef EVENTLOOP_H
-#define EVENTLOOP_H
+#pragma once
 
 #include "event.h"
 #include "eventhandler.h"
@@ -13,6 +12,8 @@
 #include <deque>
 #include <vector>
 #include <map>
+
+namespace hope {
 
 class EventLoop {
 public:
@@ -112,4 +113,4 @@ private:
     std::vector<EventHandler*> m_event_handlers;
 };
 
-#endif // EVENTLOOP_H
+}

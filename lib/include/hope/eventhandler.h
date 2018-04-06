@@ -1,5 +1,6 @@
-#ifndef EVENTHANDLER_H
-#define EVENTHANDLER_H
+#pragma once
+
+namespace hope {
 
 class Event;
 class EventLoop;
@@ -13,5 +14,4 @@ public:
     virtual void on_event(Event& event) = 0;
 };
 
-
-#endif // EVENTHANDLER_H
+}

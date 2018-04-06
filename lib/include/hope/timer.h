@@ -1,11 +1,12 @@
-#ifndef TIMER_H
-#define TIMER_H
+#pragma once
 
 #include "eventhandler.h"
 #include "eventloop.h"
 
 #include <chrono>
 #include <functional>
+
+namespace hope {
 
 class Timer : public EventHandler {
 public:
@@ -37,4 +38,4 @@ private:
     std::function<void()> m_handler;
 };
 
-#endif // TIMER_H
+}

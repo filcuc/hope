@@ -1,5 +1,6 @@
-#ifndef EVENT_H
-#define EVENT_H
+#pragma once
+
+namespace hope {
 
 struct Event
 {
@@ -8,5 +9,4 @@ struct Event
     }
 };
 
-
-#endif // EVENT_H
+}
