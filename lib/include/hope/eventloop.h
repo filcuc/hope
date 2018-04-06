@@ -22,9 +22,13 @@ public:
     using Locker = std::unique_lock<Mutex>;
     using TimePoint = std::chrono::time_point<Clock>;
 
-    EventLoop();
-
-    ~EventLoop();
+    EventLoop() {
+      m_current_event_loop = this;
+    }
+  
+    ~EventLoop() {
+      m_current_event_loop = nullptr;
+    }
 
     bool is_running() const {
         std::unique_lock<std::mutex> lock(m_mutex);
