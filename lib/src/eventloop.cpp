@@ -93,7 +93,6 @@ void EventLoop::loop() {
         }
 
         events.clear();
-
     }
 }
 

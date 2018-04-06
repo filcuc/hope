@@ -8,18 +8,17 @@
 
 namespace hope {
 
-class Timer : public EventHandler {
+class Timer final : public EventHandler {
 public:
     Timer();
 
     ~Timer() override;
 
+    std::chrono::milliseconds duration() const;
+
     void set_duration(std::chrono::milliseconds duration);
 
-    template <class T>
-    void set_on_triggered(T&& handler) {
-        m_handler = std::move(handler);
-    }
+    Signal<void>& triggered();
 
     void start();
 
@@ -28,7 +27,7 @@ protected:
 
 private:
     std::chrono::milliseconds m_duration;
-    std::function<void()> m_handler;
+    Signal<void> m_triggered;
 };
 
 }

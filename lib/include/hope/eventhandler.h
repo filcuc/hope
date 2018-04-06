@@ -1,5 +1,7 @@
 #pragma once
 
+#include "signal.h"
+
 namespace hope {
 
 class Event;
