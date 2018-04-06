@@ -18,6 +18,8 @@ namespace hope {
 class EventLoop {
 public:
     using Clock = std::chrono::steady_clock;
+    using Mutex = std::mutex;
+    using Locker = std::unique_lock<Mutex>;
     using TimePoint = std::chrono::time_point<Clock>;
 
     EventLoop();
@@ -36,7 +38,7 @@ public:
     }
 
     void quit(int exit_code = 0) {
-        std::unique_lock<std::mutex> lock(m_mutex);
+        Locker lock(m_mutex);
         m_exit = true;
         m_exit_code = exit_code;
         m_cond.notify_one();
@@ -49,18 +51,18 @@ public:
     }
 
     void register_event_handler(EventHandler* handler) {
-        std::unique_lock<std::mutex> lock(m_dispatch_mutex);
+        Locker lock(m_dispatch_mutex);
         m_event_handlers.push_back(handler);
     }
 
     void unregister_event_handler(EventHandler *handler) {
-        std::unique_lock<std::mutex> lock(m_dispatch_mutex);
+        Locker lock(m_dispatch_mutex);
         m_event_handlers.erase(std::remove(m_event_handlers.begin(), m_event_handlers.end(), handler));
     }
 
     void loop() {
         {
-            std::unique_lock<std::mutex> lock(m_mutex);
+            Locker lock(m_mutex);
             m_is_running = true;
         }
 
@@ -68,7 +70,7 @@ public:
 
         while (true) {
             while (true) {
-                std::unique_lock<std::mutex> lock(m_mutex);
+                Locker lock(m_mutex);
                 if (m_exit) {
                     m_is_running = false;
                     return;
@@ -88,7 +90,7 @@ public:
             }
 
             {
-                std::unique_lock<std::mutex> lock(m_dispatch_mutex);
+                Locker lock(m_dispatch_mutex);
                 for (auto& event : events) {
                     for (const auto& handler : m_event_handlers) {
                         handler->on_event(event);
@@ -106,8 +108,8 @@ private:
     int m_exit_code = 0;
     bool m_exit = false;
     bool m_is_running = false;
-    mutable std::mutex m_mutex;
-    mutable std::mutex m_dispatch_mutex;
+    mutable Mutex m_mutex;
+    mutable Mutex m_dispatch_mutex;
     std::condition_variable m_cond;
     std::map<TimePoint, Event> m_events;
     std::vector<EventHandler*> m_event_handlers;
