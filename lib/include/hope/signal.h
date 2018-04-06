@@ -41,8 +41,8 @@ public:
 
     void emit(Args&&... args) {
         for (const std::pair<Connection, Handler>& pair : m_handlers) {
-            assert(pair->second);
-            pair->second(std::forward<Args>(args)...);
+            assert(pair.second);
+            pair.second(std::forward<Args>(args)...);
         }
     }
 
@@ -50,6 +50,13 @@ public:
     Connection connect(Handler handler) {
         auto it = m_handlers.emplace(m_next_connection_id++, handler);
         return it.first->first;
+    }
+
+    template<typename Handler>
+    Connection connect(Handler* handler, void (Handler::*func)(Args...)) {
+        return connect([handler, func] (Args...args){
+            (handler->*func)(args...);
+        });
     }
 
     void disconnect(Connection c) {
@@ -83,6 +90,13 @@ public:
     Connection connect(Handler handler) {
         auto it = m_handlers.emplace(m_next_connection_id++, handler);
         return it.first->first;
+    }
+
+    template<typename Handler>
+    Connection connect(Handler* handler, void (Handler::*func)()) {
+        return connect([handler, func]{
+            (handler->*func)();
+        });
     }
 
     void disconnect(Connection c) {
