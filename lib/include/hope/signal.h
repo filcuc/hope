@@ -33,6 +33,12 @@ template<class ... Args>
 class Signal {
     using Handler = std::function<void(Args...)>;
 public:
+    Signal() = default;
+    Signal(const Signal& other) = delete;
+    Signal(Signal&& other) = default;
+    Signal& operator=(const Signal& other) = delete;
+    Signal& operator=(Signal&& other) = default;
+
     void emit(Args&&... args) {
         for (const std::pair<Connection, Handler>& pair : m_handlers) {
             assert(pair->second);
@@ -58,7 +64,14 @@ private:
 template <>
 class Signal<void> {
     using Handler = std::function<void()>;
+
 public:
+    Signal() = default;
+    Signal(const Signal& other) = delete;
+    Signal(Signal&& other) = default;
+    Signal& operator=(const Signal& other) = delete;
+    Signal& operator=(Signal&& other) = default;
+
     void emit() {
         for (const std::pair<Connection, Handler>& pair : m_handlers) {
             assert(pair.second);
