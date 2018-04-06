@@ -2,11 +2,8 @@
 
 namespace hope {
 
-struct Event
-{
-    Event() {
-
-    }
+struct Event {
+    virtual ~Event() = default;
 };
 
 }

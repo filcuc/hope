@@ -10,28 +10,21 @@ namespace hope {
 
 class Timer : public EventHandler {
 public:
-    Timer() {
-        if (m_current_event_loop)
-            m_current_event_loop->register_event_handler(this);
-    }
+    Timer();
 
-    void set_duration(std::chrono::milliseconds duration) {
+    ~Timer() override;
 
-    }
+    void set_duration(std::chrono::milliseconds duration);
 
     template <class T>
     void set_on_triggered(T&& handler) {
         m_handler = std::move(handler);
     }
 
-    void start() {
-        auto t = m_current_event_loop;
-    }
+    void start();
 
 protected:
-    void on_event(Event& event) {
-
-    }
+    void on_event(Event* event) override;
 
 private:
     std::chrono::milliseconds m_duration;
