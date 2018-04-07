@@ -1,7 +1,5 @@
 #pragma once
 
-#include "signal.h"
-
 #include <thread>
 
 namespace hope {
@@ -17,6 +15,7 @@ public:
 
     virtual void on_event(Event* event) = 0;
     virtual std::thread::id thread_id() const = 0;
+    virtual EventLoop* event_loop() const = 0;
 };
 
 }
