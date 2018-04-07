@@ -39,9 +39,12 @@ public:
 
     void unregister_event_handler(EventHandler *handler);
 
+    std::thread::id thread_id() const;
+
 private:
     void loop();
 
+    const std::thread::id m_thread_id;
     int m_exit_code = 0;
     bool m_exit = false;
     bool m_is_running = false;

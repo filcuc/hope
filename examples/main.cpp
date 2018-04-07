@@ -8,8 +8,9 @@ int main()
     EventLoop e;
     Timer timer;
     timer.set_duration(std::chrono::milliseconds(3000));
-    timer.triggered().connect([]{
+    timer.triggered().connect([&]{
         std::cout << "Hello World" << std::endl;
+        e.quit(0);
     });
     timer.start();
     return e.exec();

@@ -22,10 +22,13 @@ public:
 
     void start();
 
+    std::thread::id thread_id() const final;
+
 protected:
-    void on_event(Event* event) override;
+    void on_event(Event* event) final;
 
 private:
+    const std::thread::id m_thread_id;
     std::chrono::milliseconds m_duration;
     Signal<void> m_triggered;
 };

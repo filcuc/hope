@@ -4,7 +4,9 @@ namespace hope {
 
 thread_local EventLoop* m_current_event_loop = nullptr;
 
-EventLoop::EventLoop() {
+EventLoop::EventLoop()
+    : m_thread_id(std::this_thread::get_id())
+{
     m_current_event_loop = this;
 }
 
@@ -39,8 +41,7 @@ void EventLoop::quit(int exit_code) {
 }
 
 int EventLoop::exec() {
-    std::thread t([this](){ loop();});
-    t.join();
+    loop();
     return m_exit_code;
 }
 
@@ -52,6 +53,11 @@ void EventLoop::register_event_handler(EventHandler *handler) {
 void EventLoop::unregister_event_handler(EventHandler *handler) {
     Locker lock(m_dispatch_mutex);
     m_event_handlers.erase(std::remove(m_event_handlers.begin(), m_event_handlers.end(), handler));
+}
+
+std::thread::id EventLoop::thread_id() const
+{
+    return m_thread_id;
 }
 
 void EventLoop::loop() {
