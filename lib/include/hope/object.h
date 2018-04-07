@@ -4,6 +4,8 @@
 
 namespace hope {
 
+class Thread;
+
 class Object : public EventHandler {
 public:
     Object();
@@ -14,12 +16,14 @@ public:
 
     EventLoop *event_loop() const final;
 
+    void move_to_thread(Thread* thread);
+
 protected:
     void on_event(Event *event);
 
 private:
-    const std::thread::id m_thread_id;
-    EventLoop* const m_event_loop;
+    std::thread::id m_thread_id;
+    EventLoop* m_event_loop;
 };
 
 }

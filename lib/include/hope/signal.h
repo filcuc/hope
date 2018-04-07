@@ -47,14 +47,12 @@ public:
     }
 
     template<typename Tuple, std::size_t... I>
-    auto invoke_impl(Tuple& a, std::index_sequence<I...>)
-    {
+    auto invoke_impl(Tuple& a, std::index_sequence<I...>) {
         return (m_handler->*m_handler_func)(std::move(std::get<I>(a))...);
     }
 
     template<typename ...T, typename Indices = std::make_index_sequence<sizeof... (T)>>
-    auto invoke_impl(std::tuple<T...>& t)
-    {
+    auto invoke_impl(std::tuple<T...>& t) {
         return invoke_impl(t, Indices{});
     }
 

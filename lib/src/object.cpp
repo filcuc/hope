@@ -1,7 +1,9 @@
 #include "object.h"
 
+#include "event.h"
 #include "eventloop.h"
 #include "signal.h"
+#include "thread.h"
 
 #include <iostream>
 
@@ -30,6 +32,22 @@ std::thread::id Object::thread_id() const {
 
 EventLoop *Object::event_loop() const {
     return m_event_loop;
+}
+
+void Object::move_to_thread(Thread* thread) {
+    if (!thread) {
+        std::cerr << "Passing null pointer to move to thread";
+        return;
+    }
+    m_thread_id = thread->id();
+    m_event_loop->unregister_event_handler(this);
+    m_event_loop = nullptr;
+    if (auto event_loop = thread->event_loop()) {
+        m_event_loop = event_loop;
+        event_loop->register_event_handler(this);
+    } else {
+        std::cerr << "The given thread has no event loop" << std::endl;
+    }
 }
 
 void Object::on_event(Event* event) {
