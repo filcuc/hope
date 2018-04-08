@@ -1,6 +1,7 @@
 # Hope 
 ## A simple pure C++14 event loop with signals and slots 
 [![Build Status](https://travis-ci.org/filcuc/hope.svg?branch=master)](https://travis-ci.org/filcuc/hope)
+[![Coverage Status](https://coveralls.io/repos/github/filcuc/hope/badge.svg?branch=master)](https://coveralls.io/github/filcuc/hope?branch=master)
 
 ### Notes
 This project doesn't aim to become a general purpose library.
