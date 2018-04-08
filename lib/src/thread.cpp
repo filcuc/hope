@@ -17,15 +17,15 @@ std::thread::id Thread::id() const
 }
 
 void Thread::start() {
-    std::mutex mutex;
-    mutex.lock();
-    m_thread = std::thread([&]{
+    std::promise<void> promise;
+    std::future<void> future = promise.get_future();
+    m_thread = std::thread([&, this, promise = std::move(promise)]() mutable {
         EventLoop k;
         m_event_loop = &k;
-        mutex.unlock();
+        promise.set_value();
         k.exec();
     });
-    mutex.lock();
+    future.wait();
 }
 
 void Thread::quit() {
