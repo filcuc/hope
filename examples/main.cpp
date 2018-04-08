@@ -41,14 +41,14 @@ int main()
 {
     EventLoop e;
     Consumer printer;
-    Thread tasf;
-    tasf.start();
-    printer.move_to_thread(&tasf);
+    Thread thread;
+    thread.start();
+    printer.move_to_thread(&thread);
 
     Producer producer;
     producer.produce_signal().connect(&printer, &Consumer::consume);
     producer.produce_signal_2().connect(&printer, &Consumer::consume_2);
     producer.produce();
     e.exec();
-    tasf.wait();
+    thread.wait();
 }
