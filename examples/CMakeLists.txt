@@ -1,4 +1,4 @@
-set(TARGET_NAME HopeExample)
+set(TARGET_NAME hope-example)
 
 file(GLOB TARGET_SOURCES *.cpp)
 add_executable(${TARGET_NAME} ${TARGET_SOURCES})
