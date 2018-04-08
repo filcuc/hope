@@ -24,6 +24,7 @@ void Thread::start() {
         m_event_loop = &k;
         promise.set_value();
         k.exec();
+        m_event_loop = nullptr;
     });
     future.wait();
 }

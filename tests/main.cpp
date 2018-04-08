@@ -48,8 +48,6 @@ TEST(Object, MoveToThread) {
     object.move_to_thread(&thread);
     ASSERT_EQ(thread.event_loop(), object.event_loop());
     ASSERT_EQ(thread.id(), object.thread_id());
-    thread.quit();
-    thread.wait();
 }
 
 TEST(Thread, StartQuitWait) {
