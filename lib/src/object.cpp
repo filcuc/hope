@@ -40,8 +40,10 @@ void Object::move_to_thread(Thread* thread) {
         return;
     }
     m_thread_id = thread->id();
-    m_event_loop->unregister_event_handler(this);
-    m_event_loop = nullptr;
+    if (m_event_loop) {
+        m_event_loop->unregister_event_handler(this);
+        m_event_loop = nullptr;
+    }
     if (auto event_loop = thread->event_loop()) {
         m_event_loop = event_loop;
         event_loop->register_event_handler(this);

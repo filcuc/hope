@@ -52,7 +52,9 @@ void EventLoop::register_event_handler(EventHandler *handler) {
 
 void EventLoop::unregister_event_handler(EventHandler *handler) {
     Locker lock(m_dispatch_mutex);
-    m_event_handlers.erase(std::remove(m_event_handlers.begin(), m_event_handlers.end(), handler));
+    auto it = std::find(m_event_handlers.begin(), m_event_handlers.end(), handler);
+    if (it != m_event_handlers.end())
+        m_event_handlers.erase(it);
 }
 
 std::thread::id EventLoop::thread_id() const

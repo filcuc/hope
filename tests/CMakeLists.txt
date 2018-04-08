@@ -1,9 +1,16 @@
-set(TARGET_NAME hope-test)
+enable_testing()
 
-add_executable(${TARGET_NAME} main.cpp)
-set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 14)
-target_link_libraries(${TARGET_NAME} hopeStatic)
-include_directories(${CMAKE_SOURCE_DIR}/lib/include)
-if (UNIX)
-  target_link_libraries(${TARGET_NAME} pthread)
+find_package(GTest)
+
+if(${GTEST_FOUND})
+    set(TARGET_NAME hope-test)
+    add_executable(${TARGET_NAME} main.cpp)
+    set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 14)
+    target_link_libraries(${TARGET_NAME} hopeStatic GTest::GTest GTest::Main)
+    include_directories(${CMAKE_SOURCE_DIR}/lib/include)
+    if (UNIX)
+      target_link_libraries(${TARGET_NAME} pthread)
+    endif()
+    add_test(AllTestsInFoo ${TARGET_NAME})
 endif()
+
