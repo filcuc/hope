@@ -32,3 +32,6 @@ install(TARGETS ${TARGET_NAME}
         LIBRARY DESTINATION lib
         )
 
+# Static version
+add_library(${TARGET_NAME}Static STATIC ${TARGET_SOURCES} ${TARGET_HEADERS})
+set_target_properties(${TARGET_NAME}Static PROPERTIES CXX_STANDARD 14)
