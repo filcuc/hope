@@ -30,7 +30,7 @@ void Thread::start() {
 }
 
 void Thread::quit() {
-    if (m_event_loop && m_event_loop->is_running())
+    if (m_event_loop)
         m_event_loop->quit();
 }
 
