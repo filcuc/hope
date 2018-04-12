@@ -36,8 +36,8 @@ Signal<void> &Timer::triggered() {
 }
 
 void Timer::start() {
-    if (auto event_loop = m_current_event_loop) {
-        event_loop->push_event(std::unique_ptr<Event>(new TimerEvent(this)), m_duration);
+    if (auto ev = event_loop()) {
+        ev->push_event(std::unique_ptr<Event>(new TimerEvent(this)), m_duration);
     } else {
         std::cerr << "Timer started without an event loop" << std::endl;
     }

@@ -1,12 +1,14 @@
 #include "hope/thread.h"
 
 #include "hope/eventloop.h"
+#include "hope/threaddata.h"
 
 #include <future>
 
 namespace hope {
 
-Thread::~Thread() {
+Thread::~Thread()
+{
     quit();
     wait();
 }
@@ -16,12 +18,15 @@ std::thread::id Thread::id() const
     return m_thread.get_id();
 }
 
-void Thread::start() {
+void Thread::start()
+{
     std::promise<void> promise;
     std::future<void> future = promise.get_future();
     m_thread = std::thread([&]() mutable {
         EventLoop k;
         m_event_loop = &k;
+        ThreadData data(std::this_thread::get_id(), m_event_loop);
+        ThreadDataRegistry::get_instance().set_thread_data(std::move(data));
         promise.set_value();
         k.exec();
         m_event_loop = nullptr;
@@ -29,12 +34,14 @@ void Thread::start() {
     future.wait();
 }
 
-void Thread::quit() {
+void Thread::quit()
+{
     if (m_event_loop)
         m_event_loop->quit();
 }
 
-void Thread::wait() {
+void Thread::wait()
+{
     if (m_thread.joinable())
         m_thread.join();
 }

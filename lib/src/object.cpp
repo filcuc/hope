@@ -4,6 +4,7 @@
 #include "hope/eventloop.h"
 #include "hope/signal.h"
 #include "hope/thread.h"
+#include "hope/threaddata.h"
 
 #include <iostream>
 
@@ -11,10 +12,12 @@ namespace hope {
 
 Object::Object()
     : m_thread_id(std::this_thread::get_id())
-    , m_event_loop(m_current_event_loop)
 {
-    if (m_event_loop)
-        m_event_loop->register_event_handler(this);
+    if (EventLoop* ev = event_loop()) {
+        ev->register_event_handler(this);
+    } else {
+        std::cerr << "Object created without an event loop" << std::endl;
+    }
 }
 
 Object::~Object() {
@@ -22,8 +25,11 @@ Object::~Object() {
         std::cerr << "Destroying an object from different thread" << std::endl;
     }
 
-    if (m_event_loop)
-        m_event_loop->unregister_event_handler(this);
+    if (EventLoop* ev = event_loop()) {
+        ev->unregister_event_handler(this);
+    } else {
+        std::cerr << "Object created without an event loop" << std::endl;
+    }
 }
 
 std::thread::id Object::thread_id() const {
@@ -31,7 +37,8 @@ std::thread::id Object::thread_id() const {
 }
 
 EventLoop *Object::event_loop() const {
-    return m_event_loop;
+    ThreadData data = ThreadDataRegistry::get_instance().thread_data(m_thread_id);
+    return data.is_valid() ? data.event_loop() : nullptr;
 }
 
 void Object::move_to_thread(Thread* thread) {
@@ -39,16 +46,17 @@ void Object::move_to_thread(Thread* thread) {
         std::cerr << "Passing null pointer to move to thread";
         return;
     }
-    m_thread_id = thread->id();
-    if (m_event_loop) {
-        m_event_loop->unregister_event_handler(this);
-        m_event_loop = nullptr;
+    move_to_thread(thread->id());
+}
+
+void Object::move_to_thread(std::thread::id thread)
+{
+    if (auto current = event_loop()) {
+        event_loop()->unregister_event_handler(this);
     }
-    if (auto event_loop = thread->event_loop()) {
-        m_event_loop = event_loop;
-        event_loop->register_event_handler(this);
-    } else {
-        std::cerr << "The given thread has no event loop" << std::endl;
+    m_thread_id = thread;
+    if (auto current = event_loop()) {
+        event_loop()->register_event_handler(this);
     }
 }
 

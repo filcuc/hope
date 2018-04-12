@@ -2,16 +2,12 @@
 
 namespace hope {
 
-thread_local EventLoop* m_current_event_loop = nullptr;
-
 EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id())
 {
-    m_current_event_loop = this;
 }
 
 EventLoop::~EventLoop() {
-    m_current_event_loop = nullptr;
 }
 
 bool EventLoop::is_running() const {

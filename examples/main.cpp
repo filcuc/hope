@@ -1,3 +1,4 @@
+#include "hope/application.h"
 #include "hope/eventloop.h"
 #include "hope/timer.h"
 #include "hope/thread.h"
@@ -49,17 +50,15 @@ private:
 
 int main()
 {
-    EventLoop e;
+    Application app;
+
     Consumer printer;
-    Thread thread;
-    thread.start();
-    printer.move_to_thread(&thread);
 
     Producer producer;
     producer.produce_signal().connect(&printer, &Consumer::consume);
     producer.produce_signal_2().connect(&printer, &Consumer::consume_2);
     producer.produce_signal_3().connect(&printer, &Consumer::consume_3);
     producer.produce();
-    e.exec();
-    thread.wait();
+
+    return app.exec();
 }
