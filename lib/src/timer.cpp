@@ -1,5 +1,5 @@
-#include "timer.h"
-#include "event.h"
+#include "hope/timer.h"
+#include "hope/event.h"
 
 namespace hope {
 

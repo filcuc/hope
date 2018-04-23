@@ -13,7 +13,7 @@ PROPERTIES
   SOVERSION "${TARGET_MAJOR}.${TARGET_MINOR}"
   VERSION "${TARGET_MAJOR}.${TARGET_MINOR}.${TARGET_PATCH}"
 )
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/hope)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if (UNIX)
   target_link_libraries(${TARGET_NAME} pthread)
@@ -23,7 +23,7 @@ endif()
 # Install directive for header files
 install(FILES
         ${TARGET_HEADERS}
-        DESTINATION include/hope)
+        DESTINATION include)
 
 # Install directive for binaries
 install(TARGETS ${TARGET_NAME}

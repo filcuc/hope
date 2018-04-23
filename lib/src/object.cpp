@@ -1,9 +1,9 @@
-#include "object.h"
+#include "hope/object.h"
 
-#include "event.h"
-#include "eventloop.h"
-#include "signal.h"
-#include "thread.h"
+#include "hope/event.h"
+#include "hope/eventloop.h"
+#include "hope/signal.h"
+#include "hope/thread.h"
 
 #include <iostream>
 

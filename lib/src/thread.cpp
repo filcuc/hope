@@ -1,6 +1,6 @@
-#include "thread.h"
+#include "hope/thread.h"
 
-#include "eventloop.h"
+#include "hope/eventloop.h"
 
 #include <future>
 

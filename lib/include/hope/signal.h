@@ -1,8 +1,8 @@
 #pragma once
 
-#include "event.h"
+#include "hope/event.h"
 #include "eventhandler.h"
-#include "eventloop.h"
+#include "hope/eventloop.h"
 #include "private/indexsequence.h"
 
 #include <cassert>

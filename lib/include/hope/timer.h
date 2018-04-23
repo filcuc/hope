@@ -1,9 +1,9 @@
 #pragma once
 
 #include "eventhandler.h"
-#include "eventloop.h"
-#include "object.h"
-#include "signal.h"
+#include "hope/eventloop.h"
+#include "hope/object.h"
+#include "hope/signal.h"
 
 #include <chrono>
 #include <functional>
