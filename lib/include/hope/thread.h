@@ -21,6 +21,8 @@ public:
     EventLoop* event_loop() { return m_event_loop; }
 
 private:
+    void run();
+
     std::thread m_thread;
     EventLoop* m_event_loop = nullptr;
 };

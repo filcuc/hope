@@ -29,7 +29,7 @@ public:
 
     void produce() {
         m_signal.emit(10, 40);
-        m_signal_2.emit(std::make_unique<int>(320));
+        m_signal_2.emit(std::unique_ptr<int>(new int(320)));
     }
 
 private:

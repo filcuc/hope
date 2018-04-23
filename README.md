@@ -10,7 +10,7 @@ It was done for fun and scratching my own itch.
 That said it can be useful for simple command line projects
 
 ### Building
-The project require a C++14 compiler but relaxing this requirement to C++11 is in the works 
+The project require a working C++11 compiler
 ```
 mkdir build
 cd build 

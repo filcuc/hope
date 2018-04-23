@@ -3,12 +3,12 @@
 #include "event.h"
 #include "eventhandler.h"
 #include "eventloop.h"
+#include "private/indexsequence.h"
 
 #include <cassert>
 #include <functional>
 #include <map>
 #include <iostream>
-#include <utility>
 
 namespace hope {
 
@@ -47,13 +47,13 @@ public:
     }
 
     template<typename Tuple, std::size_t... I>
-    auto invoke_impl(Tuple& a, std::index_sequence<I...>) {
-        return (m_handler->*m_handler_func)(std::move(std::get<I>(a))...);
+    void invoke_impl(Tuple& a, std::index_sequence<I...>) {
+        (m_handler->*m_handler_func)(std::move(std::get<I>(a))...);
     }
 
     template<typename ...T, typename Indices = std::make_index_sequence<sizeof... (T)>>
-    auto invoke_impl(std::tuple<T...>& t) {
-        return invoke_impl(t, Indices{});
+    void invoke_impl(std::tuple<T...>& t) {
+        invoke_impl(t, Indices{});
     }
 
     Handler* const m_handler = nullptr;

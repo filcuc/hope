@@ -17,6 +17,8 @@ if (ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
 endif()
 
+set(CMAKE_CXX_STANDARD 11)
+
 add_subdirectory(lib)
 add_subdirectory(examples)
 add_subdirectory(tests)

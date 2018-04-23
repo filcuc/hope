@@ -19,7 +19,7 @@ std::thread::id Thread::id() const
 void Thread::start() {
     std::promise<void> promise;
     std::future<void> future = promise.get_future();
-    m_thread = std::thread([&, this, promise = std::move(promise)]() mutable {
+    m_thread = std::thread([&]() mutable {
         EventLoop k;
         m_event_loop = &k;
         promise.set_value();
