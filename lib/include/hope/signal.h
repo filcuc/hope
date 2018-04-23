@@ -1,9 +1,9 @@
 #pragma once
 
 #include "hope/event.h"
-#include "eventhandler.h"
+#include "hope/eventhandler.h"
 #include "hope/eventloop.h"
-#include "private/indexsequence.h"
+#include "hope/private/indexsequence.h"
 
 #include <cassert>
 #include <functional>

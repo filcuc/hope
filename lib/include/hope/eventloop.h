@@ -1,7 +1,7 @@
 #pragma once
 
 #include "hope/event.h"
-#include "eventhandler.h"
+#include "hope/eventhandler.h"
 
 #include <algorithm>
 #include <iostream>

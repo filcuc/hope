@@ -1,6 +1,6 @@
 #pragma once
 
-#include "eventhandler.h"
+#include "hope/eventhandler.h"
 #include "hope/eventloop.h"
 #include "hope/object.h"
 #include "hope/signal.h"
