@@ -1,5 +1,5 @@
 # Hope 
-## A simple pure C++14 event loop with signals and slots 
+## A simple pure C++11 event loop with signals and slots 
 [![Build Status](https://travis-ci.org/filcuc/hope.svg?branch=master)](https://travis-ci.org/filcuc/hope)
 [![codecov](https://codecov.io/gh/filcuc/hope/branch/master/graph/badge.svg)](https://codecov.io/gh/filcuc/hope)
 
