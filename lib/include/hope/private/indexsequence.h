@@ -11,28 +11,18 @@ template <std::size_t ... T>
 struct index_sequence {
 };
 
-
-template<std::size_t L, std::size_t ...R>
-struct concat_index_sequence {
-    using type = index_sequence<L, R...>;
-};
-
-
-template<std::size_t T>
+template<std::size_t K, std::size_t ...Remainder>
 struct index_sequence_builder {
-    static constexpr std::size_t value() { return T; }
-    using result = typename concat_index_sequence<index_sequence_builder<T-1>::value(), T>::type;
+    using result = typename index_sequence_builder<K-1, K-1, Remainder...>::result;
 };
 
-
-template<>
-struct index_sequence_builder<0> {
-    static constexpr std::size_t value() { return 0; }
-    using result = index_sequence<0>;
+template<std::size_t ...Remainder>
+struct index_sequence_builder<0, Remainder...> {
+    using result = index_sequence<Remainder...>;
 };
 
 template<std::size_t T>
-using make_index_sequence = typename index_sequence_builder<T - 1>::result;
+using make_index_sequence = typename index_sequence_builder<T>::result;
 
 }
 
