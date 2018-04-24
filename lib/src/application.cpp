@@ -7,7 +7,7 @@ namespace hope {
 Application::Application()
 {
     ThreadData data(std::this_thread::get_id(), &m_event_loop);
-    ThreadDataRegistry::get_instance().set_thread_data(std::move(data));
+    ThreadDataRegistry::get_instance().set_thread_data(data);
 }
 
 void Application::quit(int exit_code)

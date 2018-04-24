@@ -4,11 +4,9 @@ namespace hope {
 
 EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id())
-{
-}
+{}
 
-EventLoop::~EventLoop() {
-}
+EventLoop::~EventLoop() = default;
 
 bool EventLoop::is_running() const {
     std::unique_lock<std::mutex> lock(m_mutex);

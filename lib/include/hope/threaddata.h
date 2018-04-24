@@ -10,14 +10,11 @@ class EventLoop;
 
 class ThreadData {
 public:
-    ThreadData()
-        : m_valid(false)
-        , m_event_loop(nullptr)
-    {}
+    ThreadData() = default;
 
     ThreadData(std::thread::id id, EventLoop* event_loop)
         : m_valid(true)
-        , m_id(std::move(id))
+        , m_id(id)
         , m_event_loop(event_loop)
     {}
 
@@ -36,7 +33,7 @@ public:
 private:
     bool m_valid = false;
     std::thread::id m_id;
-    EventLoop* m_event_loop;
+    EventLoop* m_event_loop = nullptr;
 };
 
 class ThreadDataRegistry {
@@ -54,12 +51,11 @@ public:
 
     void set_thread_data(ThreadData data) {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_registry.emplace(data.thread_id(), std::move(data));
+        m_registry.emplace(data.thread_id(), data);
     }
 
 private:
-    ThreadDataRegistry() {
-    }
+    ThreadDataRegistry() = default;
 
     std::mutex m_mutex;
     std::unordered_map<std::thread::id, ThreadData> m_registry;
