@@ -145,7 +145,7 @@ public:
 
     template<typename Handler>
     Connection connect(Handler handler) {
-        auto it = m_handlers.emplace(m_next_connection_id++, handler);
+        auto it = m_handlers.emplace(get_next_connection_id(), handler);
         return it.first->first;
     }
 
@@ -170,6 +170,10 @@ public:
     }
 
 private:
+    Connection get_next_connection_id() {
+        return m_next_connection_id++;
+    }
+
     const std::thread::id m_thread_id;
     std::map<Connection, Handler> m_handlers;
     int64_t m_next_connection_id = 0;
