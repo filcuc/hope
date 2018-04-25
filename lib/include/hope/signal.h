@@ -34,9 +34,9 @@ public:
 
     QueuedInvokation() = default;
     QueuedInvokation(const QueuedInvokation&) = delete;
-    QueuedInvokation(QueuedInvokation&&) = default;
+    QueuedInvokation(QueuedInvokation&&) noexcept = default;
     QueuedInvokation& operator=(const QueuedInvokation&) = delete;
-    QueuedInvokation& operator=(QueuedInvokation&&) = default;
+    QueuedInvokation& operator=(QueuedInvokation&&) noexcept = default;
 
     EventHandler* event_handler() final {
         return m_handler;
@@ -73,9 +73,9 @@ public:
 
     QueuedInvokation() = default;
     QueuedInvokation(const QueuedInvokation&) = delete;
-    QueuedInvokation(QueuedInvokation&&) = default;
+    QueuedInvokation(QueuedInvokation&&) noexcept = default;
     QueuedInvokation& operator=(const QueuedInvokation&) = delete;
-    QueuedInvokation& operator=(QueuedInvokation&&) = default;
+    QueuedInvokation& operator=(QueuedInvokation&&) noexcept = default;
 
     EventHandler* event_handler() final {
         return m_handler;
@@ -132,9 +132,9 @@ class Signal {
 public:
     Signal() : m_thread_id(std::this_thread::get_id()) {}
     Signal(const Signal& other) = delete;
-    Signal(Signal&& other) = default;
+    Signal(Signal&& other) noexcept = default;
     Signal& operator=(const Signal& other) = delete;
-    Signal& operator=(Signal&& other) = default;
+    Signal& operator=(Signal&& other) noexcept = default;
 
     void emit(Args&&... args) {
         for (const std::pair<Connection, Handler>& pair : m_handlers) {
@@ -187,7 +187,7 @@ public:
     Signal& operator=(Signal&& other) = default;
 
     void emit() {
-        for (const std::pair<Connection, Handler>& pair : m_handlers) {
+        for (const auto& pair : m_handlers) {
             assert(pair.second);
             pair.second();
         }
