@@ -4,6 +4,7 @@
 #include "hope/event.h"
 #include "hope/eventhandler.h"
 #include "hope/eventloop.h"
+#include "hope/threaddata.h"
 #include "hope/private/indexsequence.h"
 #include "hope/private/queuedinvokationevent.h"
 
@@ -41,12 +42,8 @@ public:
     Connection connect(T* handler, void(T::*func)(Args...args)) {
         return connect([this, handler, func] (Args...args) {
             if (std::this_thread::get_id() != handler->thread_id()) /* QueuedConnectoin */ {
-                if (EventLoop* event_loop = handler->event_loop()) {
-                    auto event = make_queued_invokation_event(handler, func, std::move(args)...);
-                    event_loop->push_event(std::move(event));
-                } else {
-                    std::cerr << "Object " << handler << " has no event loop" << std::endl;
-                }
+                auto event = make_queued_invokation_event(handler, func, std::move(args)...);
+                ThreadDataRegistry::get_instance().thread_data(handler->thread_id())->push_event(std::move(event));
             } else {
                 (handler->*func)(std::move(args)...);
             }
@@ -95,12 +92,8 @@ public:
     Connection connect(T* handler, void(T::*func)()) {
         return connect([this, handler, func] {
             if (std::this_thread::get_id() != handler->thread_id()) /* QueuedConnectoin */ {
-                if (EventLoop* event_loop = handler->event_loop()) {
-                    auto event = make_queued_invokation_event(handler, func);
-                    event_loop->push_event(std::move(event));
-                } else {
-                    std::cerr << "Object " << handler << " has no event loop" << std::endl;
-                }
+                auto event = make_queued_invokation_event(handler, func);
+                ThreadDataRegistry::get_instance().thread_data(handler->thread_id())->push_event(std::move(event));
             } else {
                 (handler->*func)();
             }

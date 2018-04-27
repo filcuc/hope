@@ -14,8 +14,6 @@ public:
 
     std::thread::id thread_id() const final;
 
-    EventLoop *event_loop() const final;
-
     void move_to_thread(Thread* thread);
 
     void move_to_thread(std::thread::id thread);

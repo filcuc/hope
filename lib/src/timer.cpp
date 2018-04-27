@@ -1,5 +1,6 @@
 #include "hope/timer.h"
 #include "hope/event.h"
+#include "hope/threaddata.h"
 
 namespace hope {
 
@@ -36,11 +37,7 @@ Signal<void> &Timer::triggered() {
 }
 
 void Timer::start() {
-    if (auto ev = event_loop()) {
-        ev->push_event(std::unique_ptr<Event>(new TimerEvent(this)), m_duration);
-    } else {
-        std::cerr << "Timer started without an event loop" << std::endl;
-    }
+    ThreadDataRegistry::get_instance().thread_data(thread_id())->push_event(std::unique_ptr<Event>(new TimerEvent(this)), m_duration);
 }
 
 void Timer::on_event(Event *event) {

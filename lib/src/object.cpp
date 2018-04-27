@@ -13,31 +13,18 @@ namespace hope {
 Object::Object()
     : m_thread_id(std::this_thread::get_id())
 {
-    if (EventLoop* ev = event_loop()) {
-        ev->register_event_handler(this);
-    } else {
-        std::cerr << "Object created without an event loop" << std::endl;
-    }
+    ThreadDataRegistry::get_instance().thread_data(m_thread_id)->register_event_handler(this);
 }
 
 Object::~Object() {
     if (m_thread_id != std::this_thread::get_id()) {
         std::cerr << "Destroying an object from different thread" << std::endl;
     }
-
-    if (EventLoop* ev = event_loop()) {
-        ev->unregister_event_handler(this);
-    } else {
-        std::cerr << "Object created without an event loop" << std::endl;
-    }
+    ThreadDataRegistry::get_instance().thread_data(m_thread_id)->unregister_event_handler(this);
 }
 
 std::thread::id Object::thread_id() const {
     return m_thread_id;
-}
-
-EventLoop *Object::event_loop() const {
-    return ThreadDataRegistry::get_instance().thread_data(m_thread_id)->event_loop();
 }
 
 void Object::move_to_thread(Thread* thread) {
@@ -50,13 +37,9 @@ void Object::move_to_thread(Thread* thread) {
 
 void Object::move_to_thread(std::thread::id thread)
 {
-    if (auto current = event_loop()) {
-        event_loop()->unregister_event_handler(this);
-    }
+    ThreadDataRegistry::get_instance().thread_data(m_thread_id)->unregister_event_handler(this);
     m_thread_id = thread;
-    if (auto current = event_loop()) {
-        event_loop()->register_event_handler(this);
-    }
+    ThreadDataRegistry::get_instance().thread_data(m_thread_id)->register_event_handler(this);
 }
 
 void Object::on_event(Event* event) {
