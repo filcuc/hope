@@ -4,7 +4,7 @@
 #include "hope/event.h"
 #include "hope/eventhandler.h"
 #include "hope/eventloop.h"
-#include "hope/threaddata.h"
+#include "hope/private/threaddata.h"
 #include "hope/private/indexsequence.h"
 #include "hope/private/queuedinvokationevent.h"
 

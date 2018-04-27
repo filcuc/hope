@@ -1,7 +1,7 @@
 #include "hope/thread.h"
 
 #include "hope/eventloop.h"
-#include "hope/threaddata.h"
+#include "hope/private/threaddata.h"
 
 #include <cassert>
 #include <future>

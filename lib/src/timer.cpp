@@ -1,6 +1,6 @@
 #include "hope/timer.h"
 #include "hope/event.h"
-#include "hope/threaddata.h"
+#include "hope/private/threaddata.h"
 
 namespace hope {
 

@@ -1,5 +1,5 @@
 #include "hope/eventloop.h"
-#include "hope/threaddata.h"
+#include "hope/private/threaddata.h"
 
 namespace hope {
 
