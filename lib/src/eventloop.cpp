@@ -6,11 +6,11 @@ namespace hope {
 EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id())
 {
-    ThreadDataRegistry::get_instance().current_thread_data()->set_event_loop(this);
+    ThreadDataRegistry::instance().current_thread_data()->set_event_loop(this);
 }
 
 EventLoop::~EventLoop() {
-    ThreadDataRegistry::get_instance().current_thread_data()->set_event_loop(nullptr);
+    ThreadDataRegistry::instance().current_thread_data()->set_event_loop(nullptr);
 }
 
 bool EventLoop::is_running() const {

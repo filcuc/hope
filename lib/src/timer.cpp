@@ -37,7 +37,7 @@ Signal<void> &Timer::triggered() {
 }
 
 void Timer::start() {
-    ThreadDataRegistry::get_instance().thread_data(thread_id())->push_event(std::unique_ptr<Event>(new TimerEvent(this)), m_duration);
+    ThreadDataRegistry::instance().thread_data(thread_id())->push_event(std::unique_ptr<Event>(new TimerEvent(this)), m_duration);
 }
 
 void Timer::on_event(Event *event) {

@@ -43,7 +43,7 @@ public:
         return connect([this, handler, func] (Args...args) {
             if (std::this_thread::get_id() != handler->thread_id()) /* QueuedConnectoin */ {
                 auto event = make_queued_invokation_event(handler, func, std::move(args)...);
-                ThreadDataRegistry::get_instance().thread_data(handler->thread_id())->push_event(std::move(event));
+                ThreadDataRegistry::instance().thread_data(handler->thread_id())->push_event(std::move(event));
             } else {
                 (handler->*func)(std::move(args)...);
             }
@@ -93,7 +93,7 @@ public:
         return connect([this, handler, func] {
             if (std::this_thread::get_id() != handler->thread_id()) /* QueuedConnectoin */ {
                 auto event = make_queued_invokation_event(handler, func);
-                ThreadDataRegistry::get_instance().thread_data(handler->thread_id())->push_event(std::move(event));
+                ThreadDataRegistry::instance().thread_data(handler->thread_id())->push_event(std::move(event));
             } else {
                 (handler->*func)();
             }

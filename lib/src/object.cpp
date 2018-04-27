@@ -13,14 +13,14 @@ namespace hope {
 Object::Object()
     : m_thread_id(std::this_thread::get_id())
 {
-    ThreadDataRegistry::get_instance().thread_data(m_thread_id)->register_event_handler(this);
+    ThreadDataRegistry::instance().thread_data(m_thread_id)->register_event_handler(this);
 }
 
 Object::~Object() {
     if (m_thread_id != std::this_thread::get_id()) {
         std::cerr << "Destroying an object from different thread" << std::endl;
     }
-    ThreadDataRegistry::get_instance().thread_data(m_thread_id)->unregister_event_handler(this);
+    ThreadDataRegistry::instance().thread_data(m_thread_id)->unregister_event_handler(this);
 }
 
 std::thread::id Object::thread_id() const {
@@ -37,9 +37,9 @@ void Object::move_to_thread(Thread* thread) {
 
 void Object::move_to_thread(std::thread::id thread)
 {
-    ThreadDataRegistry::get_instance().thread_data(m_thread_id)->unregister_event_handler(this);
+    ThreadDataRegistry::instance().thread_data(m_thread_id)->unregister_event_handler(this);
     m_thread_id = thread;
-    ThreadDataRegistry::get_instance().thread_data(m_thread_id)->register_event_handler(this);
+    ThreadDataRegistry::instance().thread_data(m_thread_id)->register_event_handler(this);
 }
 
 void Object::on_event(Event* event) {

@@ -41,7 +41,7 @@ void Thread::start()
     m_state = State::Starting;
     m_cond.notify_all();
 
-    m_thread = std::thread([this] { run(); });
+    m_thread = std::thread([this] { exec(); });
     m_cond.wait(lock, [this] { return m_state == State::Started; });
     assert(m_state == State::Started);
 }
@@ -73,7 +73,7 @@ void Thread::wait()
         m_thread.join();
 }
 
-void Thread::run()
+void Thread::exec()
 {
     {
         m_mutex.lock();
@@ -89,7 +89,7 @@ void Thread::run()
     {
         m_mutex.lock();
         assert(m_state == State::Stopping);
-        ThreadDataRegistry::get_instance().current_thread_data()->set_event_loop(nullptr);
+        ThreadDataRegistry::instance().current_thread_data()->set_event_loop(nullptr);
         m_event_loop.reset();
         m_state = State::Stopped;
         m_cond.notify_all();

@@ -61,7 +61,7 @@ private:
 
 class ThreadDataRegistry {
 public:
-    static ThreadDataRegistry& get_instance() {
+    static ThreadDataRegistry& instance() {
         static ThreadDataRegistry instance;
         return instance;
     }
