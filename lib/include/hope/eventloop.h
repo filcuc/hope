@@ -42,7 +42,7 @@ public:
     std::thread::id thread_id() const;
 
 private:
-    void loop();
+    int loop();
 
     const std::thread::id m_thread_id;
     int m_exit_code = 0;

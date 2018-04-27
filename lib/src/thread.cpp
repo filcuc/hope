@@ -31,7 +31,7 @@ void Thread::start()
     }
 
     if (m_state == State::Stopping) {
-        m_cond.wait(lock, [this]{ return m_state == State::Stopped; });
+        m_cond.wait(lock, [this] { return m_state == State::Stopped; });
     }
 
     if (m_thread.joinable())
@@ -42,7 +42,7 @@ void Thread::start()
     m_cond.notify_all();
 
     m_thread = std::thread([this] { run(); });
-    m_cond.wait(lock, [this]{ return m_state == State::Started; });
+    m_cond.wait(lock, [this] { return m_state == State::Started; });
     assert(m_state == State::Started);
 }
 
@@ -53,7 +53,7 @@ void Thread::quit()
         return;
 
     if (m_state == State::Starting) {
-        m_cond.wait(lock, [this]{ return m_state == State::Started; });
+        m_cond.wait(lock, [this] { return m_state == State::Started; });
     }
 
     assert(m_state == State::Started);
@@ -66,7 +66,7 @@ void Thread::wait()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     if (m_state != State::Stopped) {
-        m_cond.wait(lock, [this]{ return m_state == State::Stopped; });
+        m_cond.wait(lock, [this] { return m_state == State::Stopped; });
     }
 
     if (m_thread.joinable())
@@ -75,25 +75,22 @@ void Thread::wait()
 
 void Thread::run()
 {
-    EventLoop event_loop;
-
     {
         m_mutex.lock();
         assert(m_state == State::Starting);
-        m_event_loop = &event_loop;
-        ThreadDataRegistry::get_instance().set_thread_data(ThreadData(std::this_thread::get_id(), m_event_loop));
+        m_event_loop.reset(new EventLoop());
         m_state = State::Started;
         m_cond.notify_all();
         m_mutex.unlock();
     }
 
-    event_loop.exec();
+    m_event_loop->exec();
 
     {
         m_mutex.lock();
         assert(m_state == State::Stopping);
-        ThreadDataRegistry::get_instance().set_thread_data(ThreadData(std::this_thread::get_id(), nullptr));
-        m_event_loop = nullptr;
+        ThreadDataRegistry::get_instance().current_thread_data()->set_event_loop(nullptr);
+        m_event_loop.reset();
         m_state = State::Stopped;
         m_cond.notify_all();
         m_mutex.unlock();

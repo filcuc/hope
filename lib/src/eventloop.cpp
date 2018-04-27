@@ -1,20 +1,25 @@
 #include "hope/eventloop.h"
+#include "hope/threaddata.h"
 
 namespace hope {
 
 EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id())
-{}
+{
+    ThreadDataRegistry::get_instance().current_thread_data()->set_event_loop(this);
+}
 
-EventLoop::~EventLoop() = default;
+EventLoop::~EventLoop() {
+    ThreadDataRegistry::get_instance().current_thread_data()->set_event_loop(nullptr);
+}
 
 bool EventLoop::is_running() const {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    Locker locker(m_mutex);
     return m_is_running;
 }
 
 void EventLoop::push_event(std::unique_ptr<Event> event, EventLoop::TimePoint when) {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    Locker lock(m_mutex);
     m_events.emplace(std::move(when), std::move(event));
     m_cond.notify_one();
 }
@@ -22,7 +27,7 @@ void EventLoop::push_event(std::unique_ptr<Event> event, EventLoop::TimePoint wh
 void EventLoop::push_event(std::unique_ptr<Event> event,
                            std::chrono::milliseconds duration,
                            EventLoop::TimePoint offset) {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    Locker lock(m_mutex);
     m_events.emplace(offset + duration, std::move(event));
     m_cond.notify_one();
 }
@@ -35,8 +40,7 @@ void EventLoop::quit(int exit_code) {
 }
 
 int EventLoop::exec() {
-    loop();
-    return m_exit_code;
+    return loop();
 }
 
 void EventLoop::register_event_handler(EventHandler *handler) {
@@ -53,10 +57,11 @@ void EventLoop::unregister_event_handler(EventHandler *handler) {
 
 std::thread::id EventLoop::thread_id() const
 {
+    Locker lock(m_mutex);
     return m_thread_id;
 }
 
-void EventLoop::loop() {
+int EventLoop::loop() {
     {
         Locker lock(m_mutex);
         m_is_running = true;
@@ -69,7 +74,7 @@ void EventLoop::loop() {
             Locker lock(m_mutex);
             if (m_exit) {
                 m_is_running = false;
-                return;
+                return m_exit_code;
             } else if (m_events.empty()) {
                 m_cond.wait(lock);
             } else {

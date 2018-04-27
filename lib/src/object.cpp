@@ -37,8 +37,7 @@ std::thread::id Object::thread_id() const {
 }
 
 EventLoop *Object::event_loop() const {
-    ThreadData data = ThreadDataRegistry::get_instance().thread_data(m_thread_id);
-    return data.is_valid() ? data.event_loop() : nullptr;
+    return ThreadDataRegistry::get_instance().thread_data(m_thread_id)->event_loop();
 }
 
 void Object::move_to_thread(Thread* thread) {

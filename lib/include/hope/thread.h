@@ -21,8 +21,6 @@ public:
 
     void wait();
 
-    EventLoop* event_loop() { return m_event_loop; }
-
 private:
     void run();
 
@@ -37,7 +35,7 @@ private:
     State m_state = State::Stopped;
     std::condition_variable m_cond;
     std::thread m_thread;
-    EventLoop* m_event_loop = nullptr;
+    std::unique_ptr<EventLoop> m_event_loop = nullptr;
 };
 
 }

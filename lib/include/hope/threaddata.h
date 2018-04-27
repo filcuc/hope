@@ -13,26 +13,27 @@ public:
     ThreadData() = default;
 
     ThreadData(std::thread::id id, EventLoop* event_loop)
-        : m_valid(true)
-        , m_id(id)
+        : m_id(id)
         , m_event_loop(event_loop)
     {}
-
-    bool is_valid() const {
-        return m_valid;
-    }
 
     std::thread::id thread_id() const {
         return m_id;
     }
 
     EventLoop* event_loop() const {
+        std::lock_guard<std::mutex> lock(m_mutex);
         return m_event_loop;
     }
 
+    void set_event_loop(EventLoop* event_loop) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_event_loop = event_loop;
+    }
+
 private:
-    bool m_valid = false;
-    std::thread::id m_id;
+    mutable std::mutex m_mutex;
+    const std::thread::id m_id;
     EventLoop* m_event_loop = nullptr;
 };
 
@@ -43,22 +44,24 @@ public:
         return instance;
     }
 
-    ThreadData thread_data(const std::thread::id& id) {
+    std::shared_ptr<ThreadData> thread_data(const std::thread::id& id) {
         std::lock_guard<std::mutex> lock(m_mutex);
         auto it = m_registry.find(id);
-        return it != m_registry.end() ? it->second : ThreadData();
+        if (it == m_registry.end()) {
+            it = m_registry.emplace(id, std::make_shared<ThreadData>(id, nullptr)).first;
+        }
+        return it->second;
     }
 
-    void set_thread_data(ThreadData data) {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_registry.emplace(data.thread_id(), data);
+    std::shared_ptr<ThreadData> current_thread_data() {
+        return thread_data(std::this_thread::get_id());
     }
 
 private:
     ThreadDataRegistry() = default;
 
-    std::mutex m_mutex;
-    std::unordered_map<std::thread::id, ThreadData> m_registry;
+    mutable std::mutex m_mutex;
+    mutable std::unordered_map<std::thread::id, std::shared_ptr<ThreadData>> m_registry;
 };
 
 }
