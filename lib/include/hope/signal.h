@@ -45,7 +45,7 @@ public:
     Signal& operator=(Signal&& other) noexcept = default;
 
     void emit(Args&&... args) {
-        for (const std::pair<Connection, Handler>& pair : m_handlers) {
+        for (const auto& pair : handlers()) {
             assert(pair.second);
             pair.second(std::forward<Args>(args)...);
         }
@@ -53,6 +53,7 @@ public:
 
     template<typename Handler>
     Connection connect(Handler handler) {
+        std::lock_guard<std::mutex> lock(m_mutex);
         auto it = m_handlers.emplace(get_next_connection_id(), handler);
         return it.first->first;
     }
@@ -70,14 +71,22 @@ public:
     }
 
     void disconnect(Connection c) {
+        std::lock_guard<std::mutex> lock(m_mutex);
         m_handlers.erase(c);
     }
 
 private:
+    std::map<Connection, Handler> handlers() const {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_handlers;
+    }
+    
+    
     Connection get_next_connection_id() {
         return m_next_connection_id++;
     }
 
+    mutable std::mutex m_mutex;
     const std::thread::id m_thread_id;
     std::map<Connection, Handler> m_handlers;
     int64_t m_next_connection_id = 0;
@@ -95,7 +104,7 @@ public:
     Signal& operator=(Signal&& other) = default;
 
     void emit() {
-        for (const auto& pair : m_handlers) {
+        for (const auto& pair : handlers()) {
             assert(pair.second);
             pair.second();
         }
@@ -103,6 +112,7 @@ public:
 
     template<typename Handler>
     Connection connect(Handler handler) {
+        std::lock_guard<std::mutex> lock(m_mutex);
         auto it = m_handlers.emplace(get_next_connection_id(), handler);
         return it.first->first;
     }
@@ -120,14 +130,21 @@ public:
     }
 
     void disconnect(Connection c) {
+        std::lock_guard<std::mutex> lock(m_mutex);
         m_handlers.erase(c);
     }
 
 private:
+    std::map<Connection, Handler> handlers() const {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_handlers;
+    }
+    
     Connection get_next_connection_id() {
         return m_next_connection_id++;
     }
 
+    mutable std::mutex m_mutex;
     const std::thread::id m_thread_id;
     std::map<Connection, Handler> m_handlers;
     int64_t m_next_connection_id = 0;
