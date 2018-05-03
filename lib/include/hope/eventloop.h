@@ -70,7 +70,7 @@ private:
     mutable Mutex m_mutex;
     mutable Mutex m_dispatch_mutex;
     std::condition_variable m_cond;
-    std::map<TimePoint, std::unique_ptr<Event>> m_events;
+    std::multimap<TimePoint, std::unique_ptr<Event>> m_events;
     std::vector<EventHandler*> m_event_handlers;
 };
 
