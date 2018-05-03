@@ -31,6 +31,7 @@
 #include <deque>
 #include <vector>
 #include <map>
+#include <unordered_set>
 
 namespace hope {
 
@@ -71,7 +72,7 @@ private:
     mutable Mutex m_dispatch_mutex;
     std::condition_variable m_cond;
     std::multimap<TimePoint, std::unique_ptr<Event>> m_events;
-    std::vector<EventHandler*> m_event_handlers;
+    std::unordered_set<EventHandler*> m_event_handlers;
 };
 
 }

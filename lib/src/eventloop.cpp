@@ -64,12 +64,12 @@ int EventLoop::exec() {
 
 void EventLoop::register_event_handler(EventHandler *handler) {
     Locker lock(m_dispatch_mutex);
-    m_event_handlers.push_back(handler);
+    m_event_handlers.emplace(handler);
 }
 
 void EventLoop::unregister_event_handler(EventHandler *handler) {
     Locker lock(m_dispatch_mutex);
-    auto it = std::find(m_event_handlers.begin(), m_event_handlers.end(), handler);
+    auto it = m_event_handlers.find(handler);
     if (it != m_event_handlers.end())
         m_event_handlers.erase(it);
 }
