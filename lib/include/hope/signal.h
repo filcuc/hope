@@ -27,16 +27,34 @@
 #include "hope/private/indexsequence.h"
 #include "hope/private/queuedinvokationevent.h"
 
+#include <atomic>
 #include <cassert>
 #include <functional>
-#include <map>
 #include <iostream>
+#include <map>
 
 namespace hope {
 
 template<class ... Args>
 class Signal {
-    using Handler = std::function<void(Args...)>;
+    struct SignalHandler {
+        SignalHandler(std::function<void(Args...)> callback)
+            : m_valid(true)
+            , m_receiver_callback(std::move(callback))
+        {}
+
+        bool valid() const {
+            return m_valid;
+        }
+
+        void exec(Args... args) const {
+            m_receiver_callback(std::forward<Args>(args)...);
+        }
+
+        std::atomic<bool> m_valid;
+        std::function<void(Args...)> m_receiver_callback;
+    };
+
 public:
     Signal() : m_thread_id(std::this_thread::get_id()) {}
     Signal(const Signal& other) = delete;
@@ -46,15 +64,15 @@ public:
 
     void emit(Args&&... args) {
         for (const auto& pair : handlers()) {
-            assert(pair.second);
-            pair.second(std::forward<Args>(args)...);
+            if (pair.second->valid())
+                pair.second->exec(std::forward<Args>(args)...);
         }
     }
 
     template<typename Handler>
     Connection connect(Handler handler) {
         std::lock_guard<std::mutex> lock(m_mutex);
-        auto it = m_handlers.emplace(get_next_connection_id(), handler);
+        auto it = m_handlers.emplace(get_next_connection_id(), std::make_shared<SignalHandler>(handler));
         return it.first->first;
     }
 
@@ -72,11 +90,15 @@ public:
 
     void disconnect(Connection c) {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_handlers.erase(c);
+        auto it = m_handlers.find(c);
+        if (it != m_handlers.end()) {
+            it->second->m_valid = false;
+            m_handlers.erase(it);
+        }
     }
 
 private:
-    std::map<Connection, Handler> handlers() const {
+    std::map<Connection, std::shared_ptr<SignalHandler>> handlers() const {
         std::lock_guard<std::mutex> lock(m_mutex);
         return m_handlers;
     }
@@ -88,13 +110,29 @@ private:
 
     mutable std::mutex m_mutex;
     const std::thread::id m_thread_id;
-    std::map<Connection, Handler> m_handlers;
+    std::map<Connection, std::shared_ptr<SignalHandler>> m_handlers;
     int64_t m_next_connection_id = 0;
 };
 
 template <>
 class Signal<void> {
-    using Handler = std::function<void()>;
+    struct SignalHandler {
+        SignalHandler(std::function<void()> callback)
+            : m_valid(true)
+            , m_receiver_callback(std::move(callback))
+        {}
+
+        bool valid() const {
+            return m_valid;
+        }
+
+        void exec() const {
+            m_receiver_callback();
+        }
+
+        std::atomic<bool> m_valid;
+        std::function<void()> m_receiver_callback;
+    };
 
 public:
     Signal() : m_thread_id(std::this_thread::get_id()) {}
@@ -105,15 +143,15 @@ public:
 
     void emit() {
         for (const auto& pair : handlers()) {
-            assert(pair.second);
-            pair.second();
+            if (pair.second->valid())
+                pair.second->exec();
         }
     }
 
     template<typename Handler>
     Connection connect(Handler handler) {
         std::lock_guard<std::mutex> lock(m_mutex);
-        auto it = m_handlers.emplace(get_next_connection_id(), handler);
+        auto it = m_handlers.emplace(get_next_connection_id(), std::make_shared<SignalHandler>(handler));
         return it.first->first;
     }
 
@@ -131,11 +169,15 @@ public:
 
     void disconnect(Connection c) {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_handlers.erase(c);
+        auto it = m_handlers.find(c);
+        if (it != m_handlers.end()) {
+            it->second->m_valid = false;
+            m_handlers.erase(it);
+        }
     }
 
 private:
-    std::map<Connection, Handler> handlers() const {
+    std::map<Connection, std::shared_ptr<SignalHandler>> handlers() const {
         std::lock_guard<std::mutex> lock(m_mutex);
         return m_handlers;
     }
@@ -146,7 +188,7 @@ private:
 
     mutable std::mutex m_mutex;
     const std::thread::id m_thread_id;
-    std::map<Connection, Handler> m_handlers;
+    std::map<Connection, std::shared_ptr<SignalHandler>> m_handlers;
     int64_t m_next_connection_id = 0;
 };
 
