@@ -49,6 +49,9 @@ struct BaseInvoker {
     virtual void invoke_direct(Args...args) const = 0;
     virtual void invoke_queued(Args...args) const = 0;
 
+    virtual const void* receiver_pointer() const = 0;
+    virtual const void* receiver_func_pointer() const = 0;
+
     std::atomic<bool> valid;
 };
 
@@ -78,8 +81,16 @@ struct Invoker final : public BaseInvoker<Args...> {
         (receiver->*receiver_func)(std::move(args)...);
     }
 
-    Receiver* receiver = nullptr;
-    ReceiverMemFunc receiver_func = nullptr;
+    const void* receiver_pointer() const final {
+        return receiver;
+    }
+
+    const void* receiver_func_pointer() const final {
+        return &receiver_func;
+    }
+
+    Receiver* const receiver = nullptr;
+    ReceiverMemFunc const receiver_func = nullptr;
 };
 
 template<class Receiver, typename ...Args>
@@ -123,6 +134,21 @@ public:
         if (it != m_handlers.end()) {
             it->second->valid = false;
             m_handlers.erase(it);
+        }
+    }
+
+    template<typename Receiver,
+             typename ReceiverMemFunc = void(Receiver::*)(Args...args),
+             typename std::enable_if<std::is_base_of<EventHandler, Receiver>::value, int>::type = 0>
+    void disconnect(Receiver* receiver, void(Receiver::*func)(Args...args)) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        for (auto it = m_handlers.begin(); it != m_handlers.end(); ++it) {
+            const SignalInvoker& invoker = it->second;
+            auto it_func = static_cast<const ReceiverMemFunc*>(invoker->receiver_func_pointer());
+            if (invoker->receiver_pointer() == receiver && *it_func == func) {
+                m_handlers.erase(it);
+                return;
+            }
         }
     }
 
