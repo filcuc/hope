@@ -51,7 +51,7 @@ void Timer::set_duration(std::chrono::milliseconds duration) {
     m_duration = duration;
 }
 
-Signal<void> &Timer::triggered() {
+Signal<> &Timer::triggered() {
     return m_triggered;
 }
 

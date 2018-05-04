@@ -51,7 +51,7 @@ public:
         return m_signal_2;
     }
 
-    Signal<void>& produce_signal_3() {
+    Signal<>& produce_signal_3() {
         return m_signal_3;
     }
 
@@ -64,7 +64,7 @@ public:
 private:
     Signal<int, int> m_signal;
     Signal<std::unique_ptr<int>> m_signal_2;
-    Signal<void> m_signal_3;
+    Signal<> m_signal_3;
 };
 
 int main()

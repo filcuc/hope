@@ -39,7 +39,7 @@ public:
 
     void set_duration(std::chrono::milliseconds duration);
 
-    Signal<void>& triggered();
+    Signal<>& triggered();
 
     void start();
 
@@ -48,7 +48,7 @@ protected:
 
 private:
     std::chrono::milliseconds m_duration;
-    Signal<void> m_triggered;
+    Signal<> m_triggered;
 };
 
 }
