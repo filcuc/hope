@@ -25,8 +25,6 @@ namespace hope {
 
 class Application {
 public:
-    Application();
-
     void quit(int exit_code);
 
     int exec();

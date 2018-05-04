@@ -23,10 +23,6 @@
 
 namespace hope {
 
-Application::Application()
-{
-}
-
 void Application::quit(int exit_code)
 {
    m_event_loop.quit(exit_code);
