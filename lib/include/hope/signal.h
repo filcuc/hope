@@ -121,7 +121,7 @@ public:
         std::lock_guard<std::mutex> lock(m_mutex);
         auto it = m_handlers.find(c);
         if (it != m_handlers.end()) {
-            it->second->m_valid = false;
+            it->second->valid = false;
             m_handlers.erase(it);
         }
     }
