@@ -35,57 +35,86 @@
 
 namespace hope {
 
+namespace detail {
+
+template<typename ...Args>
+struct BaseInvoker {
+    BaseInvoker()
+        : valid(true)
+    {}
+
+    virtual ~BaseInvoker() = default;
+
+    virtual void invoke_auto(Args...args) const = 0;
+    virtual void invoke_direct(Args...args) const = 0;
+    virtual void invoke_queued(Args...args) const = 0;
+
+    std::atomic<bool> valid;
+};
+
+template<class Receiver, typename ...Args>
+struct Invoker final : public BaseInvoker<Args...> {
+    using ReceiverMemFunc = void(Receiver::*)(Args...);
+
+    Invoker(Receiver* receiver, ReceiverMemFunc receiver_func)
+        : receiver(receiver)
+        , receiver_func(receiver_func)
+    {}
+
+    void invoke_auto(Args...args) const final {
+        if (std::this_thread::get_id() != receiver->thread_id()) {
+            invoke_queued(std::forward<Args>(args)...);
+        } else {
+            invoke_direct(std::forward<Args>(args)...);
+        }
+    }
+
+    void invoke_queued(Args...args) const final {
+        auto event = make_queued_invokation_event(receiver, receiver_func, std::move(args)...);
+        ThreadDataRegistry::instance().thread_data(receiver->thread_id())->push_event(std::move(event));
+    }
+
+    void invoke_direct(Args...args) const final {
+        (receiver->*receiver_func)(std::move(args)...);
+    }
+
+    Receiver* receiver = nullptr;
+    ReceiverMemFunc receiver_func = nullptr;
+};
+
+template<class Receiver, typename ...Args>
+std::shared_ptr<BaseInvoker<Args...>> make_invoker(Receiver* receiver, void(Receiver::*func)(Args...)) {
+    return std::make_shared<Invoker<Receiver, Args...>>(receiver, func);
+}
+
+}
+
+
 template<class ... Args>
 class Signal {
-    struct SignalHandler {
-        SignalHandler(std::function<void(Args...)> callback)
-            : m_valid(true)
-            , m_receiver_callback(std::move(callback))
-        {}
-
-        bool valid() const {
-            return m_valid;
-        }
-
-        void exec(Args... args) const {
-            m_receiver_callback(std::forward<Args>(args)...);
-        }
-
-        std::atomic<bool> m_valid;
-        std::function<void(Args...)> m_receiver_callback;
-    };
-
 public:
+    using SignalInvoker = std::shared_ptr<detail::BaseInvoker<Args...>>;
+
     Signal() : m_thread_id(std::this_thread::get_id()) {}
     Signal(const Signal& other) = delete;
     Signal(Signal&& other) noexcept = default;
     Signal& operator=(const Signal& other) = delete;
     Signal& operator=(Signal&& other) noexcept = default;
 
-    void emit(Args&&... args) {
+    void emit(Args... args) {
         for (const auto& pair : handlers()) {
-            if (pair.second->valid())
-                pair.second->exec(std::forward<Args>(args)...);
+            if (pair.second->valid) {
+                pair.second->invoke_auto(std::move(args)...);
+            }
         }
     }
 
-    template<typename Handler>
-    Connection connect(Handler handler) {
+    template<typename Receiver, typename std::enable_if<std::is_base_of<EventHandler, Receiver>::value, int>::type = 0>
+    Connection connect(Receiver* handler, void(Receiver::*func)(Args...args)) {
         std::lock_guard<std::mutex> lock(m_mutex);
-        auto it = m_handlers.emplace(get_next_connection_id(), std::make_shared<SignalHandler>(handler));
-        return it.first->first;
-    }
-
-    template<typename T, typename std::enable_if<std::is_base_of<EventHandler, T>::value, int>::type = 0>
-    Connection connect(T* handler, void(T::*func)(Args...args)) {
-        return connect([this, handler, func] (Args...args) {
-            if (std::this_thread::get_id() != handler->thread_id()) /* QueuedConnectoin */ {
-                auto event = make_queued_invokation_event(handler, func, std::move(args)...);
-                ThreadDataRegistry::instance().thread_data(handler->thread_id())->push_event(std::move(event));
-            } else {
-                (handler->*func)(std::move(args)...);
-            }
-        });
+        Connection result = get_next_connection_id();
+        m_handlers.emplace(result, detail::make_invoker(handler, func));
+        return result;
     }
 
     void disconnect(Connection c) {
@@ -98,11 +127,10 @@ public:
     }
 
 private:
-    std::map<Connection, std::shared_ptr<SignalHandler>> handlers() const {
+    std::map<Connection, SignalInvoker> handlers() const {
         std::lock_guard<std::mutex> lock(m_mutex);
         return m_handlers;
     }
-    
     
     Connection get_next_connection_id() {
         return m_next_connection_id++;
@@ -110,7 +138,7 @@ private:
 
     mutable std::mutex m_mutex;
     const std::thread::id m_thread_id;
-    std::map<Connection, std::shared_ptr<SignalHandler>> m_handlers;
+    std::map<Connection, SignalInvoker> m_handlers;
     int64_t m_next_connection_id = 0;
 };
 
