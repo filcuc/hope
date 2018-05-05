@@ -9,6 +9,37 @@ This project doesn't aim to become a general purpose library.
 It was done for fun and scratching my own itch.
 That said it can be useful for simple command line projects
 
+### How it looks?
+```
+#include "hope/application.h"
+#include "hope/timer.h"
+
+using namespace hope;
+
+class HelloWorldPrinter : public Object {
+public:
+    void say_hello() {
+        std::cout << "Hello World" << std::endl;
+    }
+};
+
+int main(int argc, char* argv[])
+{
+    Application app;
+
+    HelloWorldPrinter printer;
+
+    Timer timer;
+    timer.set_duration(std::chrono::seconds(1));
+    timer.triggered().connect(&printer, &HelloWorldPrinter::say_hello);
+    timer.triggered().connect(&app, &Application::quit);
+    timer.start();
+
+    return app.exec();
+}
+
+```
+
 ### Building
 The project require a working C++11 compiler
 ```
