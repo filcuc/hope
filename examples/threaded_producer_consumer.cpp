@@ -17,9 +17,9 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "hope/application.h"
-#include "hope/thread.h"
-#include "hope/timer.h"
+#include <hope/application.h>
+#include <hope/thread.h>
+#include <hope/timer.h>
 
 using namespace hope;
 
