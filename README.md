@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 
 ### Building
 The project require a working C++11 compiler
-```
+```Shell
 mkdir build
 cd build 
 cmake ..
@@ -51,7 +51,7 @@ make -j16
 
 ### Installing
 Follow the build steps and simply execute
-```
+```Shell
 sudo make install
 ```
 
