@@ -17,9 +17,9 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "hope/eventloop.h"
-#include "hope/timer.h"
-#include "hope/thread.h"
+#include <hope/eventloop.h>
+#include <hope/timer.h>
+#include <hope/thread.h>
 
 #include <gtest/gtest.h>
 

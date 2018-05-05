@@ -35,6 +35,8 @@
 
 namespace hope {
 
+namespace test { class EventLoopTestHelper; }
+
 class EventLoop {
 public:
     using Clock = std::chrono::steady_clock;
@@ -62,6 +64,8 @@ public:
     std::thread::id thread_id() const;
 
 private:
+    friend class EventLoopTestHelper;
+
     int loop();
 
     const std::thread::id m_thread_id;

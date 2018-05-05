@@ -4,7 +4,12 @@ find_package(GTest)
 
 if(${GTEST_FOUND})
     set(TARGET_NAME hope-test)
-    add_executable(${TARGET_NAME} main.cpp)
+    add_executable(${TARGET_NAME}
+        main.cpp
+        test_application.cpp
+        helpers/applicationtesthelper.h
+        helpers/eventlooptesthelper.h
+    )
     target_link_libraries(${TARGET_NAME} hopeStatic GTest::GTest GTest::Main)
     include_directories(${CMAKE_SOURCE_DIR}/lib/include)
     if (UNIX)
