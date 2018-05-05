@@ -39,7 +39,9 @@ TimerEvent::TimerEvent(Timer *event)
 TimerEvent::~TimerEvent() {
 }
 
-Timer::Timer() = default;
+Timer::Timer()
+    : m_duration(std::chrono::milliseconds(0))
+{}
 
 Timer::~Timer() = default;
 

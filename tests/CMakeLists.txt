@@ -7,6 +7,7 @@ if(${GTEST_FOUND})
     add_executable(${TARGET_NAME}
         main.cpp
         test_application.cpp
+        test_timer.cpp
         helpers/applicationtesthelper.h
         helpers/eventlooptesthelper.h
     )

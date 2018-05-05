@@ -17,13 +17,41 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <hope/eventloop.h>
+
+#include "helpers/applicationtesthelper.h"
+#include "helpers/eventlooptesthelper.h"
+
 #include <hope/timer.h>
-#include <hope/thread.h>
 
 #include <gtest/gtest.h>
 
-int main(int argc, char* argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+using namespace hope;
+using namespace test;
+
+class TimerFixture : public ::testing::Test {
+protected:
+    virtual void SetUp() {
+    }
+
+    Application app;
+};
+
+TEST_F(TimerFixture, CreationTest) {
+    Timer timer;
+    ASSERT_EQ(timer.thread_id(), std::this_thread::get_id());
 }
+
+TEST_F(TimerFixture, DurationTest) {
+    Timer timer;
+    ASSERT_EQ(timer.duration(), std::chrono::milliseconds(0));
+}
+
+TEST_F(TimerFixture, SetDurationTest) {
+    Timer timer;
+    timer.set_duration(std::chrono::milliseconds(4000));
+    ASSERT_EQ(timer.duration(), std::chrono::milliseconds(4000));
+}
+
+
+
+

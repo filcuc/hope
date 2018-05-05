@@ -25,15 +25,22 @@
 using namespace hope;
 using namespace test;
 
-TEST(Application, CreationTest) {
+class ApplicationFixture : public ::testing::Test {
+protected:
+    virtual void SetUp() {
+    }
+
+    std::mutex mutex;
+    std::condition_variable cond;
+};
+
+TEST_F(ApplicationFixture, CreationTest) {
     Application app;
     ASSERT_EQ(app.thread_id(), std::this_thread::get_id());
     ASSERT_FALSE(ApplicationTestHelper::event_loop(app).is_running());
 }
 
-TEST(Application, ExecTest) {
-    std::mutex mutex;
-    std::condition_variable cond;
+TEST_F(ApplicationFixture, ExecTest) {
     std::unique_lock<std::mutex> lock(mutex);
 
     Application* app = nullptr;
@@ -55,9 +62,7 @@ TEST(Application, ExecTest) {
     t.join();
 }
 
-TEST(Application, QuitTest) {
-    std::mutex mutex;
-    std::condition_variable cond;
+TEST_F(ApplicationFixture, QuitTest) {
     std::unique_lock<std::mutex> lock(mutex);
 
     Application* app = nullptr;
