@@ -11,8 +11,8 @@ That said it can be useful for simple command line projects
 
 ### How it looks?
 ```
-#include "hope/application.h"
-#include "hope/timer.h"
+#include <hope/application.h>
+#include <hope/timer.h>
 
 using namespace hope;
 
