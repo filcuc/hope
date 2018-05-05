@@ -21,9 +21,11 @@
 
 #include <condition_variable>
 #include <thread>
+#include <vector>
 
 namespace hope {
 
+class Object;
 class EventLoop;
 
 class Thread {
@@ -40,6 +42,8 @@ public:
 
     void wait();
 
+    void move_to_thread(std::unique_ptr<Object> obj);
+
 private:
     void exec();
 
@@ -55,6 +59,7 @@ private:
     std::condition_variable m_cond;
     std::thread m_thread;
     std::unique_ptr<EventLoop> m_event_loop = nullptr;
+    std::vector<std::unique_ptr<Object>> m_children;
 };
 
 }

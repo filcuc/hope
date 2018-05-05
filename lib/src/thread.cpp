@@ -19,6 +19,7 @@
 
 #include "hope/thread.h"
 
+#include "hope/object.h"
 #include "hope/eventloop.h"
 #include "hope/private/threaddata.h"
 
@@ -92,6 +93,22 @@ void Thread::wait()
         m_thread.join();
 }
 
+void Thread::move_to_thread(std::unique_ptr<Object> obj)
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    if (m_state == State::Stopping || m_state == State::Stopped) {
+        std::cerr << "Trying to move and object to a thread that has not been started" << std::endl;
+    }
+
+    if (m_state == State::Starting) {
+        m_cond.wait(lock, [this] { return m_state == State::Started; });
+    }
+
+    obj->move_to_thread(m_thread.get_id());
+    assert(m_state == State::Started);
+    m_children.push_back(std::move(obj));
+}
+
 void Thread::exec()
 {
     {
@@ -108,6 +125,7 @@ void Thread::exec()
     {
         m_mutex.lock();
         assert(m_state == State::Stopping);
+        m_children.clear();
         ThreadDataRegistry::instance().current_thread_data()->set_event_loop(nullptr);
         m_event_loop.reset();
         m_state = State::Stopped;

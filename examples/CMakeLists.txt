@@ -8,3 +8,7 @@ add_executable(producer_consumer producer_consumer.cpp)
 target_link_libraries(producer_consumer hope)
 include_directories(${CMAKE_SOURCE_DIR}/lib/include)
 
+add_executable(threaded_producer_consumer threaded_producer_consumer.cpp)
+target_link_libraries(threaded_producer_consumer hope)
+include_directories(${CMAKE_SOURCE_DIR}/lib/include)
+
