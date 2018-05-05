@@ -10,7 +10,7 @@ It was done for fun and scratching my own itch.
 That said it can be useful for simple command line projects
 
 ### How it looks?
-```
+```C++
 #include <hope/application.h>
 #include <hope/timer.h>
 
