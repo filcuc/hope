@@ -20,8 +20,13 @@
 #include "hope/application.h"
 
 #include "hope/private/threaddata.h"
+#include "hope/private/queuedinvokationevent.h"
 
 namespace hope {
+
+Application::Application()
+    : m_thread_id(std::this_thread::get_id())
+{}
 
 void Application::quit(int exit_code)
 {
@@ -31,6 +36,19 @@ void Application::quit(int exit_code)
 int Application::exec()
 {
     return m_event_loop.exec();
+}
+
+void Application::on_event(Event *event)
+{
+    if (auto signal_event = dynamic_cast<QueuedInvokationEventBase*>(event)) {
+        if (signal_event->event_handler() == this) {
+            signal_event->invoke();
+        }
+    }
+}
+
+std::thread::id Application::thread_id() const {
+    return m_thread_id;
 }
 
 }

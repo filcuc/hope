@@ -19,17 +19,26 @@
 
 #pragma once
 
+#include "hope/eventhandler.h"
 #include "hope/eventloop.h"
 
 namespace hope {
 
-class Application {
+class Application : public EventHandler {
 public:
+    Application();
+
     void quit(int exit_code);
+    void quit() { quit(0); }
 
     int exec();
 
+    void on_event(Event *event) final;
+
+    std::thread::id thread_id() const final;
+
 private:
+    std::thread::id m_thread_id;
     EventLoop m_event_loop;
 };
 
