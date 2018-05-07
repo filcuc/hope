@@ -80,10 +80,7 @@ private:
 
 class ThreadDataRegistry {
 public:
-    static ThreadDataRegistry& instance() {
-        static ThreadDataRegistry instance;
-        return instance;
-    }
+    static ThreadDataRegistry& instance();
 
     std::shared_ptr<ThreadData> thread_data(const std::thread::id& id) {
         std::lock_guard<std::mutex> lock(m_mutex);
