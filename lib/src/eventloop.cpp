@@ -22,6 +22,15 @@
 
 namespace hope {
 
+class RegisterEvent final : public Event {
+public:
+    RegisterEvent(EventHandler* handler)
+        : m_handler(handler)
+    {}
+
+    EventHandler* m_handler = nullptr;
+};
+
 EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id())
 {
@@ -63,8 +72,10 @@ int EventLoop::exec() {
 }
 
 void EventLoop::register_event_handler(EventHandler *handler) {
-    Locker lock(m_dispatch_mutex);
-    m_event_handlers.emplace(handler);
+    // We queued the connection in order to not receive already queued events
+    // In other words the handler will receive all the events after his registration
+    std::unique_ptr<Event> event(new RegisterEvent(handler));
+    push_event(std::move(event));
 }
 
 void EventLoop::unregister_event_handler(EventHandler *handler) {
@@ -112,6 +123,11 @@ int EventLoop::loop() {
         {
             Locker lock(m_dispatch_mutex);
             for (auto& event : events) {
+                if (auto registerEvent = dynamic_cast<RegisterEvent*>(event.get())) {
+                    m_event_handlers.insert(registerEvent->m_handler);
+                    continue;
+                }
+
                 for (const auto& handler : m_event_handlers) {
                     handler->on_event(event.get());
                 }

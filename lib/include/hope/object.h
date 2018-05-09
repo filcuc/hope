@@ -29,7 +29,7 @@ class Object : public EventHandler {
 public:
     Object();
 
-    ~Object();
+    ~Object() override;
 
     std::thread::id thread_id() const final;
 
@@ -38,7 +38,7 @@ public:
     void move_to_thread(std::thread::id thread);
 
 protected:
-    void on_event(Event *event);
+    void on_event(Event *event) override;
 
 private:
     std::thread::id m_thread_id;
