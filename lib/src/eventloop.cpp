@@ -79,9 +79,9 @@ void EventLoop::register_event_handler(EventHandler *handler) {
 }
 
 void EventLoop::unregister_event_handler(EventHandler *handler) {
-    Locker lock(m_event_handlers_mutex);
-    auto it = m_event_handlers.find(handler);
-    if (it != m_event_handlers.end())
+    Locker lock(m_handlers_mutex);
+    auto it = m_handlers.find(handler);
+    if (it != m_handlers.end())
         *it->second = false;
 }
 
@@ -94,7 +94,7 @@ std::thread::id EventLoop::thread_id() const
 void EventLoop::on_event(Event *event)
 {
     if (auto registerEvent = dynamic_cast<RegisterEvent*>(event)) {
-        m_event_handlers.emplace(registerEvent->m_handler, new std::atomic<bool>(true));
+        m_handlers.emplace(registerEvent->m_handler, new std::atomic<bool>(true));
     }
 }
 
@@ -146,7 +146,7 @@ void EventLoop::process_events(const std::vector<std::unique_ptr<Event> > &event
         on_event(event.get());
 
         // Evaluate all the other events
-        for (const auto& handler : m_event_handlers) {
+        for (const auto& handler : m_handlers) {
             if (handler.second)
                 handler.first->on_event(event.get());
         }
@@ -155,11 +155,11 @@ void EventLoop::process_events(const std::vector<std::unique_ptr<Event> > &event
 
 void EventLoop::cleanup_handlers()
 {
-    Locker lock(m_event_handlers_mutex);
-    for (auto it = m_event_handlers.begin(); it != m_event_handlers.end(); ) {
+    Locker lock(m_handlers_mutex);
+    for (auto it = m_handlers.begin(); it != m_handlers.end(); ) {
         const std::unique_ptr<std::atomic<bool>>& valid = it->second;
         if (!*valid) {
-            it = m_event_handlers.erase(it);
+            it = m_handlers.erase(it);
         } else {
             ++it;
         }
