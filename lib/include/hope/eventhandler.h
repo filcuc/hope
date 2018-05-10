@@ -24,9 +24,6 @@
 namespace hope {
 
 class Event;
-class EventLoop;
-
-extern thread_local EventLoop* m_current_event_loop;
 
 class EventHandler {
 public:
