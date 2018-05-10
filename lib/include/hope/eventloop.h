@@ -39,7 +39,7 @@ namespace hope {
 
 namespace test { class EventLoopTestHelper; }
 
-class EventLoop {
+class EventLoop : public EventHandler {
 public:
     using Clock = std::chrono::steady_clock;
     using Mutex = std::mutex;
@@ -48,7 +48,7 @@ public:
 
     EventLoop();
   
-    ~EventLoop();
+    ~EventLoop() override;
 
     bool is_running() const;
 
@@ -63,7 +63,9 @@ public:
 
     void unregister_event_handler(EventHandler *handler);
 
-    std::thread::id thread_id() const;
+    std::thread::id thread_id() const final;
+
+    void on_event(Event *event) final;
 
 private:
     friend class EventLoopTestHelper;

@@ -34,10 +34,12 @@ public:
 EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id())
 {
+    m_event_handlers.emplace(this, true);
     ThreadDataRegistry::instance().current_thread_data()->set_event_loop(this);
 }
 
 EventLoop::~EventLoop() {
+    m_event_handlers.erase(this);
     ThreadDataRegistry::instance().current_thread_data()->set_event_loop(nullptr);
 }
 
@@ -91,6 +93,13 @@ std::thread::id EventLoop::thread_id() const
     return m_thread_id;
 }
 
+void EventLoop::on_event(Event *event)
+{
+    if (auto registerEvent = dynamic_cast<RegisterEvent*>(event)) {
+        m_event_handlers.emplace(registerEvent->m_handler, true);
+    }
+}
+
 int EventLoop::loop() {
     {
         Locker lock(m_mutex);
@@ -121,11 +130,6 @@ int EventLoop::loop() {
         }
 
         for (auto& event : events) {
-            if (auto registerEvent = dynamic_cast<RegisterEvent*>(event.get())) {
-                m_event_handlers.emplace(registerEvent->m_handler, true);
-                continue;
-            }
-
             for (const auto& handler : m_event_handlers) {
                 if (handler.second)
                     handler.first->on_event(event.get());
