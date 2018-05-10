@@ -48,7 +48,7 @@ bool EventLoop::is_running() const {
 
 void EventLoop::push_event(std::unique_ptr<Event> event, EventLoop::TimePoint when) {
     Locker lock(m_mutex);
-    m_events.emplace(std::move(when), std::move(event));
+    m_events.emplace(when, std::move(event));
     m_cond.notify_one();
 }
 
@@ -79,10 +79,10 @@ void EventLoop::register_event_handler(EventHandler *handler) {
 }
 
 void EventLoop::unregister_event_handler(EventHandler *handler) {
-    Locker lock(m_dispatch_mutex);
+    Locker lock(m_event_handlers_mutex);
     auto it = m_event_handlers.find(handler);
     if (it != m_event_handlers.end())
-        m_event_handlers.erase(it);
+        it->second = false;
 }
 
 std::thread::id EventLoop::thread_id() const
@@ -120,21 +120,33 @@ int EventLoop::loop() {
             }
         }
 
-        {
-            Locker lock(m_dispatch_mutex);
-            for (auto& event : events) {
-                if (auto registerEvent = dynamic_cast<RegisterEvent*>(event.get())) {
-                    m_event_handlers.insert(registerEvent->m_handler);
-                    continue;
-                }
+        for (auto& event : events) {
+            if (auto registerEvent = dynamic_cast<RegisterEvent*>(event.get())) {
+                m_event_handlers.emplace(registerEvent->m_handler, true);
+                continue;
+            }
 
-                for (const auto& handler : m_event_handlers) {
-                    handler->on_event(event.get());
-                }
+            for (const auto& handler : m_event_handlers) {
+                if (handler.second)
+                    handler.first->on_event(event.get());
             }
         }
 
+        cleanup_handlers();
+
         events.clear();
+    }
+}
+
+void EventLoop::cleanup_handlers()
+{
+    Locker lock(m_event_handlers_mutex);
+    for (auto it = m_event_handlers.begin(); it != m_event_handlers.end(); ) {
+        if (!it->second) {
+            it = m_event_handlers.erase(it);
+        } else {
+            ++it;
+        }
     }
 }
 

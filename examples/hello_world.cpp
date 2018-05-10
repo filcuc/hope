@@ -26,6 +26,7 @@ class HelloWorldPrinter : public Object {
 public:
     void say_hello() {
         std::cout << "Hello World" << std::endl;
+        ThreadDataRegistry::instance().thread_data(thread_id())->unregister_event_handler(this);
     }
 };
 

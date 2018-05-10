@@ -22,6 +22,7 @@
 #include "hope/event.h"
 #include "hope/eventhandler.h"
 
+#include <atomic>
 #include <algorithm>
 #include <iostream>
 #include <functional>
@@ -32,6 +33,7 @@
 #include <vector>
 #include <map>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace hope {
 
@@ -68,15 +70,17 @@ private:
 
     int loop();
 
+    void cleanup_handlers();
+
     const std::thread::id m_thread_id;
     int m_exit_code = 0;
     bool m_exit = false;
     bool m_is_running = false;
     mutable Mutex m_mutex;
-    mutable Mutex m_dispatch_mutex;
+    mutable Mutex m_event_handlers_mutex;
     std::condition_variable m_cond;
     std::multimap<TimePoint, std::unique_ptr<Event>> m_events;
-    std::unordered_set<EventHandler*> m_event_handlers;
+    std::unordered_map<EventHandler*, std::atomic<bool>> m_event_handlers;
 };
 
 }
