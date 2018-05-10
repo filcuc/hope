@@ -34,12 +34,10 @@ public:
 EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id())
 {
-    m_event_handlers.emplace(this, new std::atomic<bool>(true));
     ThreadDataRegistry::instance().current_thread_data()->set_event_loop(this);
 }
 
 EventLoop::~EventLoop() {
-    m_event_handlers.erase(this);
     ThreadDataRegistry::instance().current_thread_data()->set_event_loop(nullptr);
 }
 
@@ -129,16 +127,29 @@ int EventLoop::loop() {
             }
         }
 
-        for (auto& event : events) {
-            for (const auto& handler : m_event_handlers) {
-                if (handler.second)
-                    handler.first->on_event(event.get());
-            }
-        }
+        // Process events
+        process_events(events);
 
+        // Remove event handlers "destroyed" from the map
         cleanup_handlers();
 
         events.clear();
+    }
+}
+
+void EventLoop::process_events(const std::vector<std::unique_ptr<Event> > &events)
+{
+    for (const std::unique_ptr<Event>& event : events) {
+        // Event loop events are processed before anything else
+        // because they can mutate the m_event_handlers map thus
+        // invalidating the iterators
+        on_event(event.get());
+
+        // Evaluate all the other events
+        for (const auto& handler : m_event_handlers) {
+            if (handler.second)
+                handler.first->on_event(event.get());
+        }
     }
 }
 

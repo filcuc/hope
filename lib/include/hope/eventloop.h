@@ -72,6 +72,8 @@ private:
 
     int loop();
 
+    void process_events(const std::vector<std::unique_ptr<Event>>& events);
+
     void cleanup_handlers();
 
     const std::thread::id m_thread_id;
