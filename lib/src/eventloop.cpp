@@ -34,7 +34,7 @@ public:
 EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id())
 {
-    m_event_handlers.emplace(this, true);
+    m_event_handlers.emplace(this, new std::atomic<bool>(true));
     ThreadDataRegistry::instance().current_thread_data()->set_event_loop(this);
 }
 
@@ -84,7 +84,7 @@ void EventLoop::unregister_event_handler(EventHandler *handler) {
     Locker lock(m_event_handlers_mutex);
     auto it = m_event_handlers.find(handler);
     if (it != m_event_handlers.end())
-        it->second = false;
+        *it->second = false;
 }
 
 std::thread::id EventLoop::thread_id() const
@@ -96,7 +96,7 @@ std::thread::id EventLoop::thread_id() const
 void EventLoop::on_event(Event *event)
 {
     if (auto registerEvent = dynamic_cast<RegisterEvent*>(event)) {
-        m_event_handlers.emplace(registerEvent->m_handler, true);
+        m_event_handlers.emplace(registerEvent->m_handler, new std::atomic<bool>(true));
     }
 }
 
@@ -146,7 +146,8 @@ void EventLoop::cleanup_handlers()
 {
     Locker lock(m_event_handlers_mutex);
     for (auto it = m_event_handlers.begin(); it != m_event_handlers.end(); ) {
-        if (!it->second) {
+        const std::unique_ptr<std::atomic<bool>>& valid = it->second;
+        if (!*valid) {
             it = m_event_handlers.erase(it);
         } else {
             ++it;

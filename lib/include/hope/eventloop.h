@@ -82,7 +82,7 @@ private:
     mutable Mutex m_event_handlers_mutex;
     std::condition_variable m_cond;
     std::multimap<TimePoint, std::unique_ptr<Event>> m_events;
-    std::unordered_map<EventHandler*, std::atomic<bool>> m_event_handlers;
+    std::unordered_map<EventHandler*, std::unique_ptr<std::atomic<bool>>> m_event_handlers;
 };
 
 }
