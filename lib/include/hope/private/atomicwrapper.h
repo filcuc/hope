@@ -23,6 +23,7 @@
 #include <utility>
 
 namespace hope {
+namespace detail {
 
 template<typename T>
 class AtomicWrapper {
@@ -57,4 +58,5 @@ private:
     std::atomic<T> m_atomic;
 };
 
-}
+} // namespace detail
+} // namespace hope

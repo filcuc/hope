@@ -22,6 +22,8 @@
 
 namespace hope {
 
+using namespace detail;
+
 class RegisterEvent final : public Event {
 public:
     RegisterEvent(EventHandler* handler)
@@ -94,7 +96,7 @@ std::thread::id EventLoop::thread_id() const
 void EventLoop::on_event(Event *event)
 {
     if (auto registerEvent = dynamic_cast<RegisterEvent*>(event)) {
-        m_handlers.emplace(registerEvent->m_handler, hope::AtomicWrapper<bool>(true));
+        m_handlers.emplace(registerEvent->m_handler, true);
     }
 }
 

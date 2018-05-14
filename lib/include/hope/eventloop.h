@@ -85,7 +85,7 @@ private:
     mutable Mutex m_handlers_mutex;
     std::condition_variable m_cond;
     std::multimap<TimePoint, std::unique_ptr<Event>> m_events;
-    std::map<EventHandler*, hope::AtomicWrapper<bool>> m_handlers;
+    std::map<EventHandler*, hope::detail::AtomicWrapper<bool>> m_handlers;
 };
 
 }
