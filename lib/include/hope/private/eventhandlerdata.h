@@ -22,6 +22,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <thread>
 
 namespace hope {
@@ -32,12 +33,54 @@ namespace detail {
 
 class EventHandlerData {
 public:
+    EventHandlerData(std::thread::id id)
+        : m_thread_id(std::move(id))
+    {}
+
+    static std::unique_lock<std::mutex> lock(const std::shared_ptr<EventHandlerData>& data) {
+        return data ? lock(*data) : std::unique_lock<std::mutex>();
+    }
+
+    static std::unique_lock<std::mutex> lock(EventHandlerData& data) {
+        return std::unique_lock<std::mutex>(data.m_mutex);
+    }
+
+    static std::pair<std::unique_lock<std::mutex>,std::unique_lock<std::mutex>> lock(const std::shared_ptr<EventHandlerData>& first,
+                                                                                     const std::shared_ptr<EventHandlerData>& second) {
+        if (first && second)
+            return lock(*first, *second);
+        else if (first)
+            return { lock(*first), std::unique_lock<std::mutex>() };
+        else if (second)
+            return { lock(*second), std::unique_lock<std::mutex>() };
+        else
+            return { std::unique_lock<std::mutex>(), std::unique_lock<std::mutex>() };
+    }
+
+    static std::pair<std::unique_lock<std::mutex>,std::unique_lock<std::mutex>> lock(EventHandlerData& first, EventHandlerData& second) {
+        EventHandlerData* first_address = &first;
+        EventHandlerData* second_address = &second;
+        if (first_address >= second_address)
+            std::swap(first_address, second_address);
+        std::unique_lock<std::mutex> first_lock = lock(*first_address);
+        std::unique_lock<std::mutex> second_lock;
+        if (first_address != second_address)
+            second_lock = lock(*second_address);
+        return {std::move(first_lock), std::move(second_lock)};
+    }
+
     std::thread::id m_thread_id;
+    std::mutex m_mutex;
 };
 
 class EventHandlerDataRegistry {
 public:
-    EventHandlerDataRegistry& instance();
+    static EventHandlerDataRegistry& instance();
+
+    EventHandlerDataRegistry(const EventHandlerDataRegistry&) = delete;
+    EventHandlerDataRegistry(EventHandlerDataRegistry&&) = delete;
+    EventHandlerDataRegistry& operator=(const EventHandlerDataRegistry&) = delete;
+    EventHandlerDataRegistry& operator=(EventHandlerDataRegistry&&) = delete;
 
     std::weak_ptr<EventHandlerData> data(EventHandler* handler) {
         auto it = m_data.find(handler);
@@ -53,6 +96,7 @@ public:
     }
 
 private:
+    EventHandlerDataRegistry() = default;
     std::map<EventHandler*, std::weak_ptr<EventHandlerData>> m_data;
 };
 

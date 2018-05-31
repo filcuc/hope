@@ -24,11 +24,13 @@
 
 namespace hope {
 
+namespace detail { class EventHandlerData; }
 namespace test { class ApplicationTestHelper; }
 
 class Application : public EventHandler {
 public:
     Application();
+    ~Application() override;
 
     void quit(int exit_code);
     void quit() { quit(0); }
@@ -42,7 +44,7 @@ public:
 private:
     friend class test::ApplicationTestHelper;
 
-    std::thread::id m_thread_id;
+    std::shared_ptr<detail::EventHandlerData> m_data;
     EventLoop m_event_loop;
 };
 

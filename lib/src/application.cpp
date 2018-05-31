@@ -19,14 +19,30 @@
 
 #include "hope/application.h"
 
+#include "hope/private/eventhandlerdata.h"
 #include "hope/private/threaddata.h"
 #include "hope/private/queuedinvokationevent.h"
 
 namespace hope {
 
 Application::Application()
-    : m_thread_id(std::this_thread::get_id())
-{}
+    : m_data(std::make_shared<detail::EventHandlerData>(std::this_thread::get_id()))
+{
+    detail::EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
+    {
+        auto lock = detail::EventHandlerData::lock(m_data);
+        ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->register_event_handler(this);
+    }
+}
+
+Application::~Application()
+{
+    {
+        auto lock = detail::EventHandlerData::lock(m_data);
+        ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_event_handler(this);
+    }
+    detail::EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
+}
 
 void Application::quit(int exit_code)
 {
@@ -48,7 +64,8 @@ void Application::on_event(Event *event)
 }
 
 std::thread::id Application::thread_id() const {
-    return m_thread_id;
+    auto lock = detail::EventHandlerData::lock(m_data);
+    return m_data->m_thread_id;
 }
 
 }
