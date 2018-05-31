@@ -23,6 +23,7 @@
 #include "hope/eventloop.h"
 #include "hope/signal.h"
 #include "hope/thread.h"
+#include "hope/private/eventhandlerdata.h"
 #include "hope/private/threaddata.h"
 
 #include <iostream>
@@ -30,20 +31,27 @@
 namespace hope {
 
 Object::Object()
-    : m_thread_id(std::this_thread::get_id())
+    : m_data(std::make_shared<detail::EventHandlerData>(std::this_thread::get_id()))
 {
-    ThreadDataRegistry::instance().thread_data(m_thread_id)->register_event_handler(this);
+    detail::EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
+    auto lock = detail::EventHandlerData::lock(m_data);
+    ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->register_event_handler(this);
 }
 
 Object::~Object() {
-    if (m_thread_id != std::this_thread::get_id()) {
-        std::cerr << "Destroying an object from different thread" << std::endl;
+    {
+        auto lock = detail::EventHandlerData::lock(m_data);
+        if (m_data->m_thread_id != std::this_thread::get_id()) {
+            std::cerr << "Destroying an object from different thread" << std::endl;
+        }
+        ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_event_handler(this);
     }
-    ThreadDataRegistry::instance().thread_data(m_thread_id)->unregister_event_handler(this);
+    detail::EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
 }
 
 std::thread::id Object::thread_id() const {
-    return m_thread_id;
+    auto lock = detail::EventHandlerData::lock(m_data);
+    return m_data->m_thread_id;
 }
 
 void Object::move_to_thread(Thread* thread) {
@@ -56,9 +64,10 @@ void Object::move_to_thread(Thread* thread) {
 
 void Object::move_to_thread(std::thread::id thread)
 {
-    ThreadDataRegistry::instance().thread_data(m_thread_id)->unregister_event_handler(this);
-    m_thread_id = thread;
-    ThreadDataRegistry::instance().thread_data(m_thread_id)->register_event_handler(this);
+    auto lock = detail::EventHandlerData::lock(m_data);
+    ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_event_handler(this);
+    m_data->m_thread_id = thread;
+    ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->register_event_handler(this);
 }
 
 void Object::on_event(Event* event) {

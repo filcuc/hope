@@ -25,6 +25,8 @@ namespace hope {
 
 class Thread;
 
+namespace detail { class EventHandlerData; }
+
 class Object : public EventHandler {
 public:
     Object();
@@ -41,7 +43,7 @@ protected:
     void on_event(Event *event) override;
 
 private:
-    std::thread::id m_thread_id;
+    std::shared_ptr<detail::EventHandlerData> m_data;
 };
 
 }
