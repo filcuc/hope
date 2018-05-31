@@ -19,11 +19,9 @@
 
 #include "hope/private/threaddata.h"
 
-namespace hope {
+using namespace hope;
 
 ThreadDataRegistry &ThreadDataRegistry::instance() {
     static ThreadDataRegistry instance;
     return instance;
-}
-
 }

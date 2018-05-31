@@ -26,7 +26,7 @@
 #include <cassert>
 #include <future>
 
-namespace hope {
+using namespace hope;
 
 Thread::Thread() = default;
 
@@ -132,6 +132,4 @@ void Thread::exec()
         m_cond.notify_all();
         m_mutex.unlock();
     }
-}
-
 }

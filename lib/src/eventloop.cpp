@@ -20,8 +20,7 @@
 #include "hope/eventloop.h"
 #include "hope/private/threaddata.h"
 
-namespace hope {
-
+using namespace hope;
 using namespace detail;
 
 class RegisterEvent final : public Event {
@@ -167,4 +166,4 @@ void EventLoop::cleanup_handlers()
     }
 }
 
-}
+

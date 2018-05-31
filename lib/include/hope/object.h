@@ -43,7 +43,7 @@ protected:
     void on_event(Event *event) override;
 
 private:
-    std::shared_ptr<detail::EventHandlerData> m_data;
+    std::shared_ptr<hope::detail::EventHandlerData> m_data;
 };
 
 }

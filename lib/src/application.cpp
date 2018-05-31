@@ -23,26 +23,27 @@
 #include "hope/private/threaddata.h"
 #include "hope/private/queuedinvokationevent.h"
 
-namespace hope {
+using namespace hope;
+using namespace detail;
 
 Application::Application()
-    : m_data(std::make_shared<detail::EventHandlerData>(std::this_thread::get_id()))
+    : m_data(std::make_shared<EventHandlerData>(std::this_thread::get_id()))
 {
-    detail::EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
-    auto lock = detail::EventHandlerData::lock(m_data);
+    EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
+    auto lock = EventHandlerData::lock(m_data);
     ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->register_event_handler(this);
 }
 
 Application::~Application()
 {
     {
-        auto lock = detail::EventHandlerData::lock(m_data);
+        auto lock = EventHandlerData::lock(m_data);
         if (m_data->m_thread_id != std::this_thread::get_id()) {
             std::cerr << "Destroying an application from different thread" << std::endl;
         }
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_event_handler(this);
     }
-    detail::EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
+    EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
 }
 
 void Application::quit(int exit_code)
@@ -65,8 +66,7 @@ void Application::on_event(Event *event)
 }
 
 std::thread::id Application::thread_id() const {
-    auto lock = detail::EventHandlerData::lock(m_data);
+    auto lock = EventHandlerData::lock(m_data);
     return m_data->m_thread_id;
 }
 
-}

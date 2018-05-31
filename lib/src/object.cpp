@@ -28,29 +28,30 @@
 
 #include <iostream>
 
-namespace hope {
+using namespace hope;
+using namespace detail;
 
 Object::Object()
-    : m_data(std::make_shared<detail::EventHandlerData>(std::this_thread::get_id()))
+    : m_data(std::make_shared<EventHandlerData>(std::this_thread::get_id()))
 {
-    detail::EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
-    auto lock = detail::EventHandlerData::lock(m_data);
+    EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
+    auto lock = EventHandlerData::lock(m_data);
     ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->register_event_handler(this);
 }
 
 Object::~Object() {
     {
-        auto lock = detail::EventHandlerData::lock(m_data);
+        auto lock = EventHandlerData::lock(m_data);
         if (m_data->m_thread_id != std::this_thread::get_id()) {
             std::cerr << "Destroying an object from different thread" << std::endl;
         }
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_event_handler(this);
     }
-    detail::EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
+    EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
 }
 
 std::thread::id Object::thread_id() const {
-    auto lock = detail::EventHandlerData::lock(m_data);
+    auto lock = EventHandlerData::lock(m_data);
     return m_data->m_thread_id;
 }
 
@@ -64,7 +65,7 @@ void Object::move_to_thread(Thread* thread) {
 
 void Object::move_to_thread(std::thread::id thread)
 {
-    auto lock = detail::EventHandlerData::lock(m_data);
+    auto lock = EventHandlerData::lock(m_data);
     ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_event_handler(this);
     m_data->m_thread_id = thread;
     ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->register_event_handler(this);
@@ -76,6 +77,4 @@ void Object::on_event(Event* event) {
             signal_event->invoke();
         }
     }
-}
-
 }

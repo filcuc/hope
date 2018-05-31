@@ -21,7 +21,7 @@
 #include "hope/event.h"
 #include "hope/private/threaddata.h"
 
-namespace hope {
+using namespace hope;
 
 struct TimerEvent final : public Event {
 public:
@@ -69,6 +69,4 @@ void Timer::on_event(Event *event) {
     }
 
     Object::on_event(event);
-}
-
 }
