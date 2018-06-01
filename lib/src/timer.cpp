@@ -20,6 +20,7 @@
 #include "hope/timer.h"
 #include "hope/event.h"
 #include "hope/private/threaddata.h"
+#include "hope/private/eventhandlerdata.h"
 
 using namespace hope;
 
@@ -36,8 +37,7 @@ TimerEvent::TimerEvent(Timer *event)
     : m_timer(event)
 {}
 
-TimerEvent::~TimerEvent() {
-}
+TimerEvent::~TimerEvent() = default;
 
 Timer::Timer()
     : m_duration(std::chrono::milliseconds(0))
@@ -59,7 +59,8 @@ Signal<>& Timer::triggered() {
 }
 
 void Timer::start() {
-    ThreadDataRegistry::instance().thread_data(thread_id())->push_event(std::unique_ptr<Event>(new TimerEvent(this)), m_duration);
+    auto lock = detail::EventHandlerData::lock(m_data);
+    ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->push_event(std::unique_ptr<Event>(new TimerEvent(this)), m_duration);
 }
 
 void Timer::on_event(Event *event) {

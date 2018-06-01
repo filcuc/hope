@@ -64,9 +64,3 @@ void Application::on_event(Event *event)
         }
     }
 }
-
-std::thread::id Application::thread_id() const {
-    auto lock = EventHandlerData::lock(m_data);
-    return m_data->m_thread_id;
-}
-

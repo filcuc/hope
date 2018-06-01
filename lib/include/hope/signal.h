@@ -23,9 +23,10 @@
 #include "hope/event.h"
 #include "hope/eventhandler.h"
 #include "hope/eventloop.h"
-#include "hope/private/threaddata.h"
 #include "hope/private/indexsequence.h"
+#include "hope/private/eventhandlerdata.h"
 #include "hope/private/queuedinvokationevent.h"
+#include "hope/private/threaddata.h"
 
 #include <atomic>
 #include <cassert>
@@ -65,16 +66,22 @@ struct Invoker final : public BaseInvoker<Args...> {
     {}
 
     void invoke_auto(Args...args) const final {
-        if (std::this_thread::get_id() != receiver->thread_id()) {
-            invoke_queued(std::forward<Args>(args)...);
-        } else {
-            invoke_direct(std::forward<Args>(args)...);
+        std::thread::id receiver_thread_id;
+        if (this->receiver_thread_id(receiver_thread_id)) {
+            if (std::this_thread::get_id() != receiver_thread_id) {
+                invoke_queued(std::forward<Args>(args)...);
+            } else {
+                invoke_direct(std::forward<Args>(args)...);
+            }
         }
     }
 
     void invoke_queued(Args...args) const final {
-        auto event = make_queued_invokation_event(receiver, receiver_func, std::move(args)...);
-        ThreadDataRegistry::instance().thread_data(receiver->thread_id())->push_event(std::move(event));
+        std::thread::id receiver_thread_id;
+        if (this->receiver_thread_id(receiver_thread_id)) {
+            auto event = make_queued_invokation_event(receiver, receiver_func, std::move(args)...);
+            ThreadDataRegistry::instance().thread_data(receiver_thread_id)->push_event(std::move(event));
+        }
     }
 
     void invoke_direct(Args...args) const final {
@@ -87,6 +94,15 @@ struct Invoker final : public BaseInvoker<Args...> {
 
     const void* receiver_func_pointer() const final {
         return &receiver_func;
+    }
+
+    bool receiver_thread_id(std::thread::id& result) const {
+        if (auto data = EventHandlerDataRegistry::instance().data(receiver).lock()) {
+            auto lock = EventHandlerData::lock(data);
+            result = data->m_thread_id;
+            return true;
+        }
+        return false;
     }
 
     Receiver* const receiver = nullptr;

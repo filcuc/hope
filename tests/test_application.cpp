@@ -36,7 +36,6 @@ protected:
 
 TEST_F(ApplicationFixture, CreationTest) {
     Application app;
-    ASSERT_EQ(app.thread_id(), std::this_thread::get_id());
     ASSERT_FALSE(ApplicationTestHelper::event_loop(app).is_running());
 }
 

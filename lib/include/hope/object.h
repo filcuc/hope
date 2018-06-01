@@ -33,8 +33,6 @@ public:
 
     ~Object() override;
 
-    std::thread::id thread_id() const final;
-
     void move_to_thread(Thread* thread);
 
     void move_to_thread(std::thread::id thread);
@@ -42,7 +40,6 @@ public:
 protected:
     void on_event(Event *event) override;
 
-private:
     std::shared_ptr<hope::detail::EventHandlerData> m_data;
 };
 

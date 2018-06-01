@@ -50,11 +50,6 @@ Object::~Object() {
     EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
 }
 
-std::thread::id Object::thread_id() const {
-    auto lock = EventHandlerData::lock(m_data);
-    return m_data->m_thread_id;
-}
-
 void Object::move_to_thread(Thread* thread) {
     if (!thread) {
         std::cerr << "Passing null pointer to move to thread";

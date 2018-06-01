@@ -39,8 +39,6 @@ public:
 
     void on_event(Event *event) final;
 
-    std::thread::id thread_id() const final;
-
 private:
     friend class test::ApplicationTestHelper;
 

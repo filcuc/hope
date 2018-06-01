@@ -38,6 +38,7 @@
 
 namespace hope {
 
+namespace detail { class EventHandlerData; }
 namespace test { class EventLoopTestHelper; }
 
 class EventLoop : public EventHandler {
@@ -64,8 +65,6 @@ public:
 
     void unregister_event_handler(EventHandler *handler);
 
-    std::thread::id thread_id() const final;
-
     void on_event(Event *event) final;
 
 private:
@@ -77,7 +76,7 @@ private:
 
     void cleanup_handlers();
 
-    const std::thread::id m_thread_id;
+    std::shared_ptr<detail::EventHandlerData> m_data;
     int m_exit_code = 0;
     bool m_exit = false;
     bool m_is_running = false;

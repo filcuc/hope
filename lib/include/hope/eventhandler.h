@@ -30,7 +30,6 @@ public:
     virtual ~EventHandler() = default;
 
     virtual void on_event(Event* event) = 0;
-    virtual std::thread::id thread_id() const = 0;
 };
 
 }

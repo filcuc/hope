@@ -38,7 +38,6 @@ protected:
 
 TEST_F(TimerFixture, CreationTest) {
     Timer timer;
-    ASSERT_EQ(timer.thread_id(), std::this_thread::get_id());
 }
 
 TEST_F(TimerFixture, DurationTest) {

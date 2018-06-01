@@ -19,6 +19,7 @@
 
 #include "hope/eventloop.h"
 #include "hope/private/threaddata.h"
+#include "hope/private/eventhandlerdata.h"
 
 using namespace hope;
 using namespace detail;
@@ -33,13 +34,19 @@ public:
 };
 
 EventLoop::EventLoop()
-    : m_thread_id(std::this_thread::get_id())
+    : m_data(std::make_shared<EventHandlerData>(std::this_thread::get_id()))
 {
-    ThreadDataRegistry::instance().current_thread_data()->set_event_loop(this);
+    auto lock = EventHandlerData::lock(m_data);
+    EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
+    ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->set_event_loop(this);
 }
 
 EventLoop::~EventLoop() {
-    ThreadDataRegistry::instance().current_thread_data()->set_event_loop(nullptr);
+    {
+        auto lock = EventHandlerData::lock(m_data);
+        ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->set_event_loop(nullptr);
+    }
+    EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
 }
 
 bool EventLoop::is_running() const {
@@ -84,12 +91,6 @@ void EventLoop::unregister_event_handler(EventHandler *handler) {
     auto it = m_handlers.find(handler);
     if (it != m_handlers.end())
         it->second.value() = false;
-}
-
-std::thread::id EventLoop::thread_id() const
-{
-    Locker lock(m_mutex);
-    return m_thread_id;
 }
 
 void EventLoop::on_event(Event *event)
