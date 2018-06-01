@@ -41,6 +41,7 @@ TimerEvent::~TimerEvent() {
 
 Timer::Timer()
     : m_duration(std::chrono::milliseconds(0))
+    , m_triggered(*this)
 {}
 
 Timer::~Timer() = default;
