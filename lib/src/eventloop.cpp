@@ -36,14 +36,16 @@ public:
 EventLoop::EventLoop()
     : m_data(std::make_shared<EventHandlerData>(std::this_thread::get_id()))
 {
-    auto lock = EventHandlerData::lock(m_data);
     EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
-    ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->set_event_loop(this);
+    {
+        auto lock = m_data->lock();
+        ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->set_event_loop(this);
+    }
 }
 
 EventLoop::~EventLoop() {
     {
-        auto lock = EventHandlerData::lock(m_data);
+        auto lock = m_data->lock();
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->set_event_loop(nullptr);
     }
     EventHandlerDataRegistry::instance().unregister_event_handler_data(this);

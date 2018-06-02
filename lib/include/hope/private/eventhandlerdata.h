@@ -37,6 +37,10 @@ public:
         : m_thread_id(std::move(id))
     {}
 
+    std::unique_lock<std::mutex> lock() {
+        return lock(*this);
+    }
+
     static std::unique_lock<std::mutex> lock(const std::shared_ptr<EventHandlerData>& data) {
         return data ? lock(*data) : std::unique_lock<std::mutex>();
     }

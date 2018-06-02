@@ -59,7 +59,7 @@ Signal<>& Timer::triggered() {
 }
 
 void Timer::start() {
-    auto lock = detail::EventHandlerData::lock(m_data);
+    auto lock = m_data->lock();
     ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->push_event(std::unique_ptr<Event>(new TimerEvent(this)), m_duration);
 }
 
