@@ -66,12 +66,36 @@ public:
         return m_data;
     }
 
+    bool is_some() const {
+        return m_ok;
+    }
+
+    bool is_none() const {
+        return !m_ok;
+    }
+
     operator T() {
         return m_data;
     }
 
     operator bool() {
         return m_ok;
+    }
+
+    T* operator->() {
+        return m_ok ? &m_data : nullptr;
+    }
+
+    const T* operator->() const {
+        return m_ok ? &m_data : nullptr;
+    }
+
+    bool operator==(const Optional& other) const {
+        return m_ok == other.m_ok && m_data == other.m_data;
+    }
+
+    bool operator!=(const Optional& other) const {
+        return !operator==(other);
     }
 
 private:
