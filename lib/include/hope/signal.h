@@ -128,7 +128,7 @@ class Signal {
 public:
     using SignalInvoker = std::shared_ptr<detail::BaseInvoker<Args...>>;
 
-    Signal(EventHandler& parent) : m_parent(parent) {}
+    Signal() = default;
     Signal(const Signal& other) = delete;
     Signal(Signal&& other) noexcept = default;
     Signal& operator=(const Signal& other) = delete;
@@ -185,7 +185,6 @@ private:
     }
 
     mutable std::mutex m_mutex;
-    EventHandler& m_parent;
     std::map<Connection, SignalInvoker> m_handlers;
     int64_t m_next_connection_id = 0;
 };

@@ -26,8 +26,6 @@ using Product = std::string;
 
 struct Producer : public Object {
     Producer()
-        : m_product_available_signal(*this)
-        , m_finished_signal(*this)
     {
         m_timer.set_duration(std::chrono::seconds(1));
         m_timer.triggered().connect(this, &Producer::on_triggered);

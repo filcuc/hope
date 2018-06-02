@@ -17,18 +17,52 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <hope/application.h>
 #include <hope/object.h>
+#include <hope/signal.h>
 
 #include <gtest/gtest.h>
 
 using namespace hope;
 
-class SignalFixture : public ::testing::Test {
-protected:
-    virtual void SetUp() {
+class TestSender : public Object {
+public:
+    Signal<>& test_signal() {
+        return m_test_signal;
     }
 
+private:
+    Signal<> m_test_signal;
 };
 
-TEST_F(SignalFixture, CreationTest) {
+class TestReceiver : public Object {
+public:
+    void test_receiver() {
+        ++num_calls;
+    }
+
+    int num_calls = 0;
+};
+
+class SignalFixture : public ::testing::Test {
+protected:
+    void SetUp() override {
+    }
+};
+
+TEST_F(SignalFixture, TestSignalInvokationWithoutConnection) {
+    Application app;
+    TestSender sender;
+    TestReceiver receiver;
+    sender.test_signal().emit();
+    ASSERT_EQ(0, receiver.num_calls);
+}
+
+TEST_F(SignalFixture, TestDirectInvokation) {
+    Application app;
+    TestSender sender;
+    TestReceiver receiver;
+    sender.test_signal().connect(&receiver, &TestReceiver::test_receiver);
+    sender.test_signal().emit();
+    ASSERT_EQ(1, receiver.num_calls);
 }
