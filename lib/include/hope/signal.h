@@ -61,14 +61,14 @@ struct Invoker final : public BaseInvoker<Args...> {
     using ReceiverMemFunc = void(Receiver::*)(Args...);
 
     Invoker(Receiver* receiver, ReceiverMemFunc receiver_func)
-        : receiver(receiver)
-        , receiver_func(receiver_func)
+        : m_receiver(receiver)
+        , m_receiver_func(receiver_func)
     {}
 
     void invoke_auto(Args...args) const final {
-        std::thread::id receiver_thread_id;
-        if (this->receiver_thread_id(receiver_thread_id)) {
-            if (std::this_thread::get_id() != receiver_thread_id) {
+        std::thread::id thread_id;
+        if (this->receiver_thread_id(thread_id)) {
+            if (std::this_thread::get_id() != thread_id) {
                 invoke_queued(std::forward<Args>(args)...);
             } else {
                 invoke_direct(std::forward<Args>(args)...);
@@ -77,27 +77,29 @@ struct Invoker final : public BaseInvoker<Args...> {
     }
 
     void invoke_queued(Args...args) const final {
-        std::thread::id receiver_thread_id;
-        if (this->receiver_thread_id(receiver_thread_id)) {
-            auto event = make_queued_invokation_event(receiver, receiver_func, std::move(args)...);
-            ThreadDataRegistry::instance().thread_data(receiver_thread_id)->push_event(std::move(event));
+        std::thread::id thread_id;
+        if (this->receiver_thread_id(thread_id)) {
+            auto event = make_queued_invokation_event(m_receiver, m_receiver_func, std::move(args)...);
+            ThreadDataRegistry::instance().thread_data(thread_id)->push_event(std::move(event));
         }
     }
 
     void invoke_direct(Args...args) const final {
-        (receiver->*receiver_func)(std::move(args)...);
+        if (is_receiver_alive()) {
+            (m_receiver->*m_receiver_func)(std::move(args)...);
+        }
     }
 
     const void* receiver_pointer() const final {
-        return receiver;
+        return m_receiver;
     }
 
     const void* receiver_func_pointer() const final {
-        return &receiver_func;
+        return &m_receiver_func;
     }
 
     bool receiver_thread_id(std::thread::id& result) const {
-        if (auto data = EventHandlerDataRegistry::instance().data(receiver).lock()) {
+        if (auto data = EventHandlerDataRegistry::instance().data(m_receiver).lock()) {
             auto lock = EventHandlerData::lock(data);
             result = data->m_thread_id;
             return true;
@@ -105,8 +107,12 @@ struct Invoker final : public BaseInvoker<Args...> {
         return false;
     }
 
-    Receiver* const receiver = nullptr;
-    ReceiverMemFunc const receiver_func = nullptr;
+    bool is_receiver_alive() const {
+        return EventHandlerDataRegistry::instance().data(m_receiver).lock() != nullptr;
+    }
+
+    Receiver* const m_receiver = nullptr;
+    ReceiverMemFunc const m_receiver_func = nullptr;
 };
 
 template<class Receiver, typename ...Args>
