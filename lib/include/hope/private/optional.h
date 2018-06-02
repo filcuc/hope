@@ -40,9 +40,9 @@ public:
     {}
 
     template<typename ...Args>
-    Optional(Args... args)
+    Optional(Args&&... args)
         : m_ok(true)
-        , m_data(std::move(args...))
+        , m_data(std::forward<Args...>(args...))
     {}
 
     Optional(const Optional&) = default;
