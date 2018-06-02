@@ -20,6 +20,7 @@
 #include <hope/application.h>
 #include <hope/object.h>
 #include <hope/signal.h>
+#include <hope/thread.h>
 
 #include <gtest/gtest.h>
 
@@ -65,4 +66,17 @@ TEST_F(SignalFixture, TestDirectInvokation) {
     sender.test_signal().connect(&receiver, &TestReceiver::test_receiver);
     sender.test_signal().emit();
     ASSERT_EQ(1, receiver.num_calls);
+}
+
+TEST_F(SignalFixture, TestQueuedInvokation) {
+    Application app;
+    TestSender sender;
+    auto receiver = new TestReceiver();
+    sender.test_signal().connect(receiver, &TestReceiver::test_receiver);
+    Thread thread;
+    thread.start();
+    thread.move_to_thread(std::unique_ptr<TestReceiver>(receiver));
+    sender.test_signal().emit();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    ASSERT_EQ(1, receiver->num_calls);
 }
