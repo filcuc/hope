@@ -22,6 +22,8 @@
 namespace hope {
 namespace detail {
 
+/// Naive optional class until we decide to c++14 standard
+/// This works only for `T` that are default constructable and copiable
 template<class T>
 class Optional {
 public:
@@ -35,6 +37,12 @@ public:
     Optional(const T& data)
         : m_ok(true)
         , m_data(data)
+    {}
+
+    template<typename ...Args>
+    Optional(Args... args)
+        : m_ok(true)
+        , m_data(std::move(args...))
     {}
 
     Optional(const Optional&) = default;
