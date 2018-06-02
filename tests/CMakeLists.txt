@@ -8,6 +8,7 @@ if(${GTEST_FOUND})
         main.cpp
         test_application.cpp
         test_timer.cpp
+        test_signal.cpp
         helpers/applicationtesthelper.h
         helpers/eventlooptesthelper.h
     )
