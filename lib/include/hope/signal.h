@@ -27,6 +27,7 @@
 #include "hope/private/eventhandlerdata.h"
 #include "hope/private/queuedinvokationevent.h"
 #include "hope/private/threaddata.h"
+#include "hope/private/optional.h"
 
 #include <atomic>
 #include <cassert>
@@ -66,8 +67,7 @@ struct Invoker final : public BaseInvoker<Args...> {
     {}
 
     void invoke_auto(Args...args) const final {
-        std::thread::id thread_id;
-        if (this->receiver_thread_id(thread_id)) {
+        if (Optional<std::thread::id> thread_id = receiver_thread_id()) {
             if (std::this_thread::get_id() != thread_id) {
                 invoke_queued(std::forward<Args>(args)...);
             } else {
@@ -77,8 +77,7 @@ struct Invoker final : public BaseInvoker<Args...> {
     }
 
     void invoke_queued(Args...args) const final {
-        std::thread::id thread_id;
-        if (this->receiver_thread_id(thread_id)) {
+        if (Optional<std::thread::id> thread_id = receiver_thread_id()) {
             auto event = make_queued_invokation_event(m_receiver, m_receiver_func, std::move(args)...);
             ThreadDataRegistry::instance().thread_data(thread_id)->push_event(std::move(event));
         }
@@ -98,13 +97,14 @@ struct Invoker final : public BaseInvoker<Args...> {
         return &m_receiver_func;
     }
 
-    bool receiver_thread_id(std::thread::id& result) const {
+private:
+    Optional<std::thread::id> receiver_thread_id() const {
+        Optional<std::thread::id> result;
         if (auto data = EventHandlerDataRegistry::instance().data(m_receiver).lock()) {
             auto lock = EventHandlerData::lock(data);
             result = data->m_thread_id;
-            return true;
         }
-        return false;
+        return result;
     }
 
     bool is_receiver_alive() const {
