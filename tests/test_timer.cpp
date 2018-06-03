@@ -30,6 +30,8 @@ using namespace test;
 
 using Clock = std::chrono::steady_clock;
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
+using Milliseconds = std::chrono::milliseconds;
+using Seconds = std::chrono::seconds;
 
 static TimePoint triggered_time;
 static bool triggered = false;
@@ -57,23 +59,23 @@ TEST_F(TimerFixture, CreationTest) {
 
 TEST_F(TimerFixture, DurationTest) {
     Timer timer;
-    ASSERT_EQ(timer.duration(), std::chrono::milliseconds(0));
+    ASSERT_EQ(timer.duration(), Milliseconds(0));
 }
 
 TEST_F(TimerFixture, SetDurationTest) {
     Timer timer;
-    timer.set_duration(std::chrono::milliseconds(4000));
-    ASSERT_EQ(timer.duration(), std::chrono::milliseconds(4000));
+    timer.set_duration(Milliseconds(4000));
+    ASSERT_EQ(timer.duration(), Milliseconds(4000));
 }
 
 TEST_F(TimerFixture, TestTriggerSignal) {
     TestReceiver receiver;
     Timer timer;
-    timer.set_duration(std::chrono::milliseconds(1000));
+    timer.set_duration(Milliseconds(1000));
     timer.triggered().connect(&receiver, &TestReceiver::on_triggered);
 
     std::thread t([this] {
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        std::this_thread::sleep_for(Milliseconds(1000));
         app.quit();
     });
 
@@ -83,8 +85,9 @@ TEST_F(TimerFixture, TestTriggerSignal) {
     t.join();
 
     ASSERT_EQ(true, triggered);
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(triggered_time - start_time);
-    ASSERT_TRUE(duration >= std::chrono::microseconds(1000));
+    auto duration = std::chrono::duration_cast<Milliseconds>(triggered_time - start_time);
+    ASSERT_GE(duration, Milliseconds(1000));
+    ASSERT_LT(duration, Milliseconds(2000));
 }
 
 
