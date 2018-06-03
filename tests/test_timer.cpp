@@ -28,9 +28,24 @@
 using namespace hope;
 using namespace test;
 
+using Clock = std::chrono::steady_clock;
+using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
+
+static TimePoint triggered_time;
+static bool triggered = false;
+
+class TestReceiver : public Object {
+public:
+    void on_triggered() {
+        triggered = true;
+        triggered_time = Clock::now();
+    }
+};
+
 class TimerFixture : public ::testing::Test {
 protected:
     virtual void SetUp() {
+        triggered = false;
     }
 
     Application app;
@@ -49,6 +64,27 @@ TEST_F(TimerFixture, SetDurationTest) {
     Timer timer;
     timer.set_duration(std::chrono::milliseconds(4000));
     ASSERT_EQ(timer.duration(), std::chrono::milliseconds(4000));
+}
+
+TEST_F(TimerFixture, TestTriggerSignal) {
+    TestReceiver receiver;
+    Timer timer;
+    timer.set_duration(std::chrono::milliseconds(1000));
+    timer.triggered().connect(&receiver, &TestReceiver::on_triggered);
+
+    std::thread t([this] {
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        app.quit();
+    });
+
+    timer.start();
+    TimePoint start_time = Clock::now();
+    app.exec();
+    t.join();
+
+    ASSERT_EQ(true, triggered);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(triggered_time - start_time);
+    ASSERT_TRUE(duration >= std::chrono::microseconds(1000));
 }
 
 
