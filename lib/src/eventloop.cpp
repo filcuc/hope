@@ -24,6 +24,8 @@
 using namespace hope;
 using namespace detail;
 
+namespace {
+
 class RegisterEvent final : public Event {
 public:
     RegisterEvent(EventHandler* handler)
@@ -32,6 +34,8 @@ public:
 
     EventHandler* m_handler = nullptr;
 };
+
+}
 
 EventLoop::EventLoop()
     : m_data(std::make_shared<EventHandlerData>(std::this_thread::get_id()))

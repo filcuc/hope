@@ -46,11 +46,16 @@ public:
 
 class TimerFixture : public ::testing::Test {
 protected:
-    virtual void SetUp() {
+    void SetUp() override {
+        app.reset(new Application());
         triggered = false;
     }
 
-    Application app;
+    void TearDown() override {
+        app.reset();
+    }
+
+    std::unique_ptr<Application> app;
 };
 
 TEST_F(TimerFixture, CreationTest) {
@@ -73,16 +78,11 @@ TEST_F(TimerFixture, TestTriggerSignal) {
     Timer timer;
     timer.set_duration(Milliseconds(1000));
     timer.triggered().connect(&receiver, &TestReceiver::on_triggered);
-
-    std::thread t([this] {
-        std::this_thread::sleep_for(Milliseconds(1000));
-        app.quit();
-    });
-
+    timer.triggered().connect(app.get(), &Application::quit);
     timer.start();
+
     TimePoint start_time = Clock::now();
-    app.exec();
-    t.join();
+    app->exec();
 
     ASSERT_EQ(true, triggered);
     auto duration = std::chrono::duration_cast<Milliseconds>(triggered_time - start_time);
