@@ -41,7 +41,9 @@ public:
     AtomicWrapper(AtomicWrapper&& other) noexcept = delete;
 
     AtomicWrapper& operator=(const AtomicWrapper& other) {
-        return AtomicWrapper(other);
+        if (&other != this)
+            *this = AtomicWrapper(other);
+        return *this;
     }
 
     AtomicWrapper& operator=(AtomicWrapper&& other) noexcept = delete;
