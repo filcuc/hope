@@ -23,18 +23,13 @@
 #include <hope/event.h>
 #include <hope/eventhandler.h>
 
-#include <atomic>
 #include <algorithm>
-#include <iostream>
-#include <functional>
 #include <thread>
 #include <condition_variable>
+#include <memory>
 #include <mutex>
-#include <deque>
-#include <vector>
 #include <map>
-#include <unordered_set>
-#include <unordered_map>
+#include <vector>
 
 namespace hope {
 
