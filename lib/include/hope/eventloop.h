@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include "hope/private/atomicwrapper.h"
-#include "hope/event.h"
-#include "hope/eventhandler.h"
+#include <hope/private/atomicwrapper.h>
+#include <hope/event.h>
+#include <hope/eventhandler.h>
 
 #include <atomic>
 #include <algorithm>

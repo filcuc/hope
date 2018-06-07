@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "eventhandler.h"
+#include <hope/eventhandler.h>
 
 #include <thread>
 

@@ -17,10 +17,10 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "hope/timer.h"
-#include "hope/event.h"
-#include "hope/private/threaddata.h"
-#include "hope/private/eventhandlerdata.h"
+#include <hope/timer.h>
+#include <hope/event.h>
+#include <hope/private/threaddata.h>
+#include <hope/private/eventhandlerdata.h>
 
 using namespace hope;
 

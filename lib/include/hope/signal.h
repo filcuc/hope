@@ -19,12 +19,12 @@
 
 #pragma once
 
-#include "hope/connection.h"
-#include "hope/eventhandler.h"
-#include "hope/private/eventhandlerdata.h"
-#include "hope/private/queuedinvokationevent.h"
-#include "hope/private/threaddata.h"
-#include "hope/private/optional.h"
+#include <hope/connection.h>
+#include <hope/eventhandler.h>
+#include <hope/private/eventhandlerdata.h>
+#include <hope/private/queuedinvokationevent.h>
+#include <hope/private/threaddata.h>
+#include <hope/private/optional.h>
 
 #include <atomic>
 #include <cassert>

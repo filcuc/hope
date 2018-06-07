@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include "hope/eventhandler.h"
-#include "hope/eventloop.h"
-#include "hope/object.h"
-#include "hope/signal.h"
+#include <hope/eventhandler.h>
+#include <hope/eventloop.h>
+#include <hope/object.h>
+#include <hope/signal.h>
 
 #include <chrono>
 #include <functional>

@@ -17,4 +17,4 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "hope/signal.h"
+#include <hope/signal.h>

@@ -17,11 +17,11 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "hope/thread.h"
+#include <hope/thread.h>
 
-#include "hope/object.h"
-#include "hope/eventloop.h"
-#include "hope/private/threaddata.h"
+#include <hope/object.h>
+#include <hope/eventloop.h>
+#include <hope/private/threaddata.h>
 
 #include <cassert>
 #include <future>

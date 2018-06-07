@@ -17,7 +17,7 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "hope/private/eventhandlerdata.h"
+#include <hope/private/eventhandlerdata.h>
 
 using namespace hope;
 using namespace detail;

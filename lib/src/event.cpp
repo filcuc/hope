@@ -17,6 +17,6 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "hope/event.h"
+#include <hope/event.h>
 
 using namespace hope;

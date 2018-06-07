@@ -17,7 +17,7 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "hope/private/threaddata.h"
+#include <hope/private/threaddata.h>
 
 using namespace hope;
 

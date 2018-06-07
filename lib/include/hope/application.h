@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include "hope/eventhandler.h"
-#include "hope/eventloop.h"
+#include <hope/eventhandler.h>
+#include <hope/eventloop.h>
 
 namespace hope {
 
