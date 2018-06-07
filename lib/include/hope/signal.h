@@ -21,8 +21,6 @@
 
 #include "hope/connection.h"
 #include "hope/eventhandler.h"
-#include "hope/eventloop.h"
-#include "hope/private/indexsequence.h"
 #include "hope/private/eventhandlerdata.h"
 #include "hope/private/queuedinvokationevent.h"
 #include "hope/private/threaddata.h"
