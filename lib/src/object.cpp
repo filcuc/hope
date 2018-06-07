@@ -19,11 +19,10 @@
 
 #include <hope/object.h>
 
-#include <hope/event.h>
-#include <hope/eventloop.h>
 #include <hope/signal.h>
 #include <hope/thread.h>
 #include <hope/private/eventhandlerdata.h>
+#include <hope/private/queuedinvokationevent.h>
 #include <hope/private/threaddata.h>
 
 #include <iostream>

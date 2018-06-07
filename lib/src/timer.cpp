@@ -20,7 +20,6 @@
 #include <hope/timer.h>
 #include <hope/event.h>
 #include <hope/private/threaddata.h>
-#include <hope/private/eventhandlerdata.h>
 
 using namespace hope;
 
