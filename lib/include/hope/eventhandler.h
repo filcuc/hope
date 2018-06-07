@@ -25,6 +25,12 @@ class Event;
 
 class EventHandler {
 public:
+    EventHandler() = default;
+    EventHandler(const EventHandler&) = delete;
+    EventHandler(EventHandler&&) = delete;
+    EventHandler& operator=(const EventHandler&) = delete;
+    EventHandler& operator=(EventHandler&&) = delete;
+
     virtual ~EventHandler() = default;
 
     virtual void on_event(Event* event) = 0;
