@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include <thread>
-
 namespace hope {
 
 class Event;

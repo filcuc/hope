@@ -21,6 +21,8 @@
 
 #include "eventhandler.h"
 
+#include <thread>
+
 namespace hope {
 
 class Thread;

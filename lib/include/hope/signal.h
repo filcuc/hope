@@ -20,7 +20,6 @@
 #pragma once
 
 #include "hope/connection.h"
-#include "hope/event.h"
 #include "hope/eventhandler.h"
 #include "hope/eventloop.h"
 #include "hope/private/indexsequence.h"
