@@ -41,7 +41,7 @@ namespace detail {
 template<typename ...Args>
 struct BaseInvoker {
     BaseInvoker()
-        : valid(true)
+        : m_valid(true)
     {}
 
     virtual ~BaseInvoker() = default;
@@ -53,7 +53,7 @@ struct BaseInvoker {
     virtual const void* receiver_pointer() const = 0;
     virtual const void* receiver_func_pointer() const = 0;
 
-    std::atomic<bool> valid;
+    std::atomic<bool> m_valid;
 };
 
 template<class Receiver, typename ...Args>
@@ -135,7 +135,7 @@ public:
 
     void emit(Args... args) {
         for (const auto& pair : handlers()) {
-            if (pair.second->valid) {
+            if (pair.second->m_valid) {
                 pair.second->invoke_auto(std::move(args)...);
             }
         }
@@ -153,7 +153,7 @@ public:
         std::lock_guard<std::mutex> lock(m_mutex);
         auto it = m_handlers.find(c);
         if (it != m_handlers.end()) {
-            it->second->valid = false;
+            it->second->m_valid = false;
             m_handlers.erase(it);
         }
     }
