@@ -21,7 +21,7 @@
 
 #include <hope/signal.h>
 #include <hope/thread.h>
-#include <hope/private/eventhandlerdata.h>
+#include <hope/private/objectdata.h>
 #include <hope/private/queuedinvokationevent.h>
 #include <hope/private/threaddata.h>
 
@@ -31,7 +31,7 @@ using namespace hope;
 using namespace detail;
 
 Object::Object(bool init)
-    : m_data(std::make_shared<EventHandlerData>(std::this_thread::get_id()))
+    : m_data(std::make_shared<ObjectData>(std::this_thread::get_id()))
 {
     if (init)
         initialize();
@@ -46,7 +46,7 @@ void Object::initialize()
 {
     if (initialized)
         return;
-    EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
+    ObjectDataRegistry::instance().register_object_data(this, m_data);
     {
         auto lock = m_data->lock();
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->register_event_handler(this);
@@ -65,7 +65,7 @@ void Object::terminate()
         }
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_event_handler(this);
     }
-    EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
+    ObjectDataRegistry::instance().unregister_object_data(this);
     terminated = true;
 }
 

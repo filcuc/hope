@@ -19,15 +19,14 @@
 
 #pragma once
 
-#include <hope/eventhandler.h>
-
 #include <thread>
 
 namespace hope {
 
+class Event;
 class Thread;
 
-namespace detail { class EventHandlerData; }
+namespace detail { class ObjectData; }
 
 class Object {
 public:
@@ -49,7 +48,7 @@ protected:
 
     bool initialized = false;
     bool terminated = false;
-    std::shared_ptr<hope::detail::EventHandlerData> m_data;
+    std::shared_ptr<hope::detail::ObjectData> m_data;
 };
 
 }

@@ -31,9 +31,9 @@ class Object;
 
 namespace detail {
 
-class EventHandlerData {
+class ObjectData {
 public:
-    EventHandlerData(std::thread::id id)
+    ObjectData(std::thread::id id)
         : m_thread_id(std::move(id))
     {}
 
@@ -41,16 +41,16 @@ public:
         return lock(*this);
     }
 
-    static std::unique_lock<std::mutex> lock(const std::shared_ptr<EventHandlerData>& data) {
+    static std::unique_lock<std::mutex> lock(const std::shared_ptr<ObjectData>& data) {
         return data ? lock(*data) : std::unique_lock<std::mutex>();
     }
 
-    static std::unique_lock<std::mutex> lock(EventHandlerData& data) {
+    static std::unique_lock<std::mutex> lock(ObjectData& data) {
         return std::unique_lock<std::mutex>(data.m_mutex);
     }
 
-    static std::pair<std::unique_lock<std::mutex>,std::unique_lock<std::mutex>> lock(const std::shared_ptr<EventHandlerData>& first,
-                                                                                     const std::shared_ptr<EventHandlerData>& second) {
+    static std::pair<std::unique_lock<std::mutex>,std::unique_lock<std::mutex>> lock(const std::shared_ptr<ObjectData>& first,
+                                                                                     const std::shared_ptr<ObjectData>& second) {
         if (first && second)
             return lock(*first, *second);
         else if (first)
@@ -61,9 +61,9 @@ public:
             return { std::unique_lock<std::mutex>(), std::unique_lock<std::mutex>() };
     }
 
-    static std::pair<std::unique_lock<std::mutex>,std::unique_lock<std::mutex>> lock(EventHandlerData& first, EventHandlerData& second) {
-        EventHandlerData* first_address = &first;
-        EventHandlerData* second_address = &second;
+    static std::pair<std::unique_lock<std::mutex>,std::unique_lock<std::mutex>> lock(ObjectData& first, ObjectData& second) {
+        ObjectData* first_address = &first;
+        ObjectData* second_address = &second;
         if (first_address >= second_address)
             std::swap(first_address, second_address);
         std::unique_lock<std::mutex> first_lock = lock(*first_address);
@@ -77,31 +77,31 @@ public:
     std::mutex m_mutex;
 };
 
-class EventHandlerDataRegistry {
+class ObjectDataRegistry {
 public:
-    static EventHandlerDataRegistry& instance();
+    static ObjectDataRegistry& instance();
 
-    EventHandlerDataRegistry(const EventHandlerDataRegistry&) = delete;
-    EventHandlerDataRegistry(EventHandlerDataRegistry&&) = delete;
-    EventHandlerDataRegistry& operator=(const EventHandlerDataRegistry&) = delete;
-    EventHandlerDataRegistry& operator=(EventHandlerDataRegistry&&) = delete;
+    ObjectDataRegistry(const ObjectDataRegistry&) = delete;
+    ObjectDataRegistry(ObjectDataRegistry&&) = delete;
+    ObjectDataRegistry& operator=(const ObjectDataRegistry&) = delete;
+    ObjectDataRegistry& operator=(ObjectDataRegistry&&) = delete;
 
-    std::weak_ptr<EventHandlerData> data(Object* handler) {
-        auto it = m_data.find(handler);
-        return it != m_data.end() ? it->second : std::weak_ptr<EventHandlerData>();
+    std::weak_ptr<ObjectData> data(Object* object) {
+        auto it = m_data.find(object);
+        return it != m_data.end() ? it->second : std::weak_ptr<ObjectData>();
     }
 
-    void register_event_handler_data(Object* handler, const std::shared_ptr<EventHandlerData>& data) {
-        m_data.emplace(handler, data);
+    void register_object_data(Object* object, const std::shared_ptr<ObjectData>& data) {
+        m_data.emplace(object, data);
     }
 
-    void unregister_event_handler_data(Object* handler) {
-        m_data.erase(handler);
+    void unregister_object_data(Object* object) {
+        m_data.erase(object);
     }
 
 private:
-    EventHandlerDataRegistry() = default;
-    std::map<Object*, std::weak_ptr<EventHandlerData>> m_data;
+    ObjectDataRegistry() = default;
+    std::map<Object*, std::weak_ptr<ObjectData>> m_data;
 };
 
 }

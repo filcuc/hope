@@ -33,7 +33,7 @@
 
 namespace hope {
 
-namespace detail { class EventHandlerData; }
+namespace detail { class ObjectData; }
 namespace test { class EventLoopTestHelper; }
 
 class EventLoop : public Object {

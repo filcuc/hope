@@ -24,7 +24,7 @@
 
 namespace hope {
 
-namespace detail { class EventHandlerData; }
+namespace detail { class ObjectData; }
 namespace test { class ApplicationTestHelper; }
 
 class Application : public Object {

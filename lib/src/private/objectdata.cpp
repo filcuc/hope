@@ -17,12 +17,12 @@
     along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <hope/private/eventhandlerdata.h>
+#include <hope/private/objectdata.h>
 
 using namespace hope;
 using namespace detail;
 
-EventHandlerDataRegistry& EventHandlerDataRegistry::instance() {
-  static EventHandlerDataRegistry instance;
+ObjectDataRegistry& ObjectDataRegistry::instance() {
+  static ObjectDataRegistry instance;
   return instance;
 }

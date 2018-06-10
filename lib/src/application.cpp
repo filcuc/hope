@@ -19,7 +19,7 @@
 
 #include <hope/application.h>
 
-#include <hope/private/eventhandlerdata.h>
+#include <hope/private/objectdata.h>
 #include <hope/private/threaddata.h>
 #include <hope/private/queuedinvokationevent.h>
 

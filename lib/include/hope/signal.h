@@ -20,8 +20,7 @@
 #pragma once
 
 #include <hope/connection.h>
-#include <hope/eventhandler.h>
-#include <hope/private/eventhandlerdata.h>
+#include <hope/private/objectdata.h>
 #include <hope/private/queuedinvokationevent.h>
 #include <hope/private/threaddata.h>
 #include <hope/private/optional.h>
@@ -97,15 +96,15 @@ struct Invoker final : public BaseInvoker<Args...> {
 private:
     Optional<std::thread::id> receiver_thread_id() const {
         Optional<std::thread::id> result;
-        if (auto data = EventHandlerDataRegistry::instance().data(m_receiver).lock()) {
-            auto lock = EventHandlerData::lock(data);
+        if (auto data = ObjectDataRegistry::instance().data(m_receiver).lock()) {
+            auto lock = ObjectData::lock(data);
             result = data->m_thread_id;
         }
         return result;
     }
 
     bool is_receiver_alive() const {
-        return EventHandlerDataRegistry::instance().data(m_receiver).lock() != nullptr;
+        return ObjectDataRegistry::instance().data(m_receiver).lock() != nullptr;
     }
 
     Receiver* const m_receiver = nullptr;

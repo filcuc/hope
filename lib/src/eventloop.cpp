@@ -19,7 +19,7 @@
 
 #include <hope/eventloop.h>
 #include <hope/private/threaddata.h>
-#include <hope/private/eventhandlerdata.h>
+#include <hope/private/objectdata.h>
 
 using namespace hope;
 using namespace detail;
