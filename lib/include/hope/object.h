@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <thread>
 
 namespace hope {
@@ -46,8 +47,8 @@ protected:
     void initialize();
     void terminate();
 
-    bool initialized = false;
-    bool terminated = false;
+    std::atomic<bool> m_initialized;
+    std::atomic<bool> m_terminated;
     std::shared_ptr<hope::detail::ObjectData> m_data;
 };
 

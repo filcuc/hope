@@ -31,7 +31,9 @@ using namespace hope;
 using namespace detail;
 
 Object::Object(bool init)
-    : m_data(std::make_shared<ObjectData>(std::this_thread::get_id()))
+    : m_initialized(false)
+    , m_terminated(false)
+    , m_data(std::make_shared<ObjectData>(std::this_thread::get_id()))
 {
     if (init)
         initialize();
@@ -44,19 +46,18 @@ Object::Object()
 
 void Object::initialize()
 {
-    if (initialized)
+    if (m_initialized.exchange(true))
         return;
     ObjectDataRegistry::instance().register_object_data(this, m_data);
     {
         auto lock = m_data->lock();
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->register_object(this);
     }
-    initialized = true;
 }
 
 void Object::terminate()
 {
-    if (terminated)
+    if (m_terminated.exchange(true))
         return;
     {
         auto lock = m_data->lock();
@@ -66,7 +67,6 @@ void Object::terminate()
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_object(this);
     }
     ObjectDataRegistry::instance().unregister_object_data(this);
-    terminated = true;
 }
 
 Object::~Object() {
