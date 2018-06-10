@@ -131,7 +131,7 @@ public:
     Signal& operator=(Signal&& other) noexcept = default;
 
     void emit(Args... args) {
-        for (const auto& pair : handlers()) {
+        for (const auto& pair : objects()) {
             if (pair.second->m_valid) {
                 pair.second->invoke_auto(std::move(args)...);
             }
@@ -139,19 +139,19 @@ public:
     }
 
     template<typename Receiver, typename std::enable_if<std::is_base_of<Object, Receiver>::value, int>::type = 0>
-    Connection connect(Receiver* handler, void(Receiver::*func)(Args...args)) {
+    Connection connect(Receiver* receiver, void(Receiver::*func)(Args...args)) {
         std::lock_guard<std::mutex> lock(m_mutex);
         Connection result = get_next_connection_id();
-        m_handlers.emplace(result, detail::make_invoker(handler, func));
+        m_objects.emplace(result, detail::make_invoker(receiver, func));
         return result;
     }
 
     void disconnect(Connection c) {
         std::lock_guard<std::mutex> lock(m_mutex);
-        auto it = m_handlers.find(c);
-        if (it != m_handlers.end()) {
+        auto it = m_objects.find(c);
+        if (it != m_objects.end()) {
             it->second->m_valid = false;
-            m_handlers.erase(it);
+            m_objects.erase(it);
         }
     }
 
@@ -160,20 +160,20 @@ public:
              typename std::enable_if<std::is_base_of<Object, Receiver>::value, int>::type = 0>
     void disconnect(Receiver* receiver, void(Receiver::*func)(Args...args)) {
         std::lock_guard<std::mutex> lock(m_mutex);
-        for (auto it = m_handlers.begin(); it != m_handlers.end(); ++it) {
+        for (auto it = m_objects.begin(); it != m_objects.end(); ++it) {
             const SignalInvoker& invoker = it->second;
             auto it_func = static_cast<const ReceiverMemFunc*>(invoker->receiver_func_pointer());
             if (invoker->receiver_pointer() == receiver && *it_func == func) {
-                m_handlers.erase(it);
+                m_objects.erase(it);
                 return;
             }
         }
     }
 
 private:
-    std::map<Connection, SignalInvoker> handlers() const {
+    std::map<Connection, SignalInvoker> objects() const {
         std::lock_guard<std::mutex> lock(m_mutex);
-        return m_handlers;
+        return m_objects;
     }
     
     Connection get_next_connection_id() {
@@ -181,7 +181,7 @@ private:
     }
 
     mutable std::mutex m_mutex;
-    std::map<Connection, SignalInvoker> m_handlers;
+    std::map<Connection, SignalInvoker> m_objects;
     int64_t m_next_connection_id = 0;
 };
 

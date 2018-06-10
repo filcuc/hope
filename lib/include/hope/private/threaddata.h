@@ -48,20 +48,20 @@ public:
         m_event_loop = event_loop;
     }
 
-    void register_event_handler(Object* handler) {
+    void register_object(Object* object) {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_event_loop)
-            m_event_loop->register_event_handler(handler);
+            m_event_loop->register_object(object);
         else
-            std::cerr << "No event event loop when registering handler " << handler << std::endl;
+            std::cerr << "No event event loop when registering object " << object << std::endl;
     }
 
-    void unregister_event_handler(Object* handler) {
+    void unregister_object(Object* object) {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_event_loop)
-            m_event_loop->unregister_event_handler(handler);
+            m_event_loop->unregister_object(object);
         else
-            std::cerr << "No event event loop when unregistering handler " << handler << std::endl;
+            std::cerr << "No event event loop when unregistering object " << object << std::endl;
     }
 
     template<typename ...T>

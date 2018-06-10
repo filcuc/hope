@@ -56,9 +56,9 @@ public:
 
     int exec();
 
-    void register_event_handler(Object* handler);
+    void register_object(Object* object);
 
-    void unregister_event_handler(Object* handler);
+    void unregister_object(Object* object);
 
     void on_event(Event *event) final;
 
@@ -69,16 +69,16 @@ private:
 
     void process_events(const std::vector<std::unique_ptr<Event>>& events);
 
-    void cleanup_handlers();
+    void cleanup_objects();
 
     int m_exit_code = 0;
     bool m_exit = false;
     bool m_is_running = false;
     mutable Mutex m_mutex;
-    mutable Mutex m_handlers_mutex;
+    mutable Mutex m_objects_mutex;
     std::condition_variable m_cond;
     std::multimap<TimePoint, std::unique_ptr<Event>> m_events;
-    std::map<Object*, hope::detail::AtomicWrapper<bool>> m_handlers;
+    std::map<Object*, hope::detail::AtomicWrapper<bool>> m_objects;
 };
 
 }

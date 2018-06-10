@@ -30,22 +30,22 @@ class Object;
 
 class QueuedInvokationEventBase : public Event {
 public:
-    virtual Object* event_handler() = 0;
+    virtual Object* object() = 0;
     virtual void invoke() = 0;
 };
 
-template<class Handler, class ...Args>
+template<class Object, class ...Args>
 class QueuedInvokation final : public QueuedInvokationEventBase {
-    using HandlerFuncPtr = void(Handler::* const)(Args...);
-    using HandlerFuncArgs = std::tuple<Args...>;
+    using ObjectFuncPtr = void(Object::* const)(Args...);
+    using ObjectFuncArgs = std::tuple<Args...>;
 
 public:
-    QueuedInvokation(Handler* handler,
-                     HandlerFuncPtr handler_func,
+    QueuedInvokation(Object* object,
+                     ObjectFuncPtr object_func,
                      Args...args)
-        : m_handler(handler)
-        , m_handler_func(handler_func)
-        , m_handler_func_args(std::move(args)...)
+        : m_object(object)
+        , m_object_func(object_func)
+        , m_object_func_args(std::move(args)...)
     {}
 
     QueuedInvokation() = default;
@@ -54,17 +54,17 @@ public:
     QueuedInvokation& operator=(const QueuedInvokation&) = delete;
     QueuedInvokation& operator=(QueuedInvokation&&) noexcept = default;
 
-    Object* event_handler() final {
-        return m_handler;
+    Object* object() final {
+        return m_object;
     }
 
     void invoke() final {
-        invoke_impl(m_handler_func_args);
+        invoke_impl(m_object_func_args);
     }
 
     template<typename Tuple, std::size_t... I>
     void invoke_impl(Tuple& a, std::index_sequence<I...>) {
-        (m_handler->*m_handler_func)(std::move(std::get<I>(a))...);
+        (m_object->*m_object_func)(std::move(std::get<I>(a))...);
     }
 
     template<typename ...T, typename Indices = std::make_index_sequence<sizeof... (T)>>
@@ -72,19 +72,19 @@ public:
         invoke_impl(t, Indices{});
     }
 
-    Handler* const m_handler = nullptr;
-    HandlerFuncPtr m_handler_func = nullptr;
-    HandlerFuncArgs m_handler_func_args;
+    Object* const m_object = nullptr;
+    ObjectFuncPtr m_object_func = nullptr;
+    ObjectFuncArgs m_object_func_args;
 };
 
-template<class Handler>
-class QueuedInvokation<Handler, void> final : public QueuedInvokationEventBase {
-    using HandlerFuncPtr = void(Handler::* const)();
+template<class Object>
+class QueuedInvokation<Object, void> final : public QueuedInvokationEventBase {
+    using ObjectFuncPtr = void(Object::* const)();
 public:
-    QueuedInvokation(Handler* handler,
-                     HandlerFuncPtr handler_func)
-        : m_handler(handler)
-        , m_handler_func(handler_func)
+    QueuedInvokation(Object* object,
+                     ObjectFuncPtr object_func)
+        : m_object(object)
+        , m_object_func(object_func)
     {}
 
     QueuedInvokation() = default;
@@ -93,30 +93,30 @@ public:
     QueuedInvokation& operator=(const QueuedInvokation&) = delete;
     QueuedInvokation& operator=(QueuedInvokation&&) noexcept = default;
 
-    Object* event_handler() final {
-        return m_handler;
+    Object* object() final {
+        return m_object;
     }
 
     void invoke() final {
-        (m_handler->*m_handler_func)();
+        (m_object->*m_object_func)();
     }
 
 private:
-    Handler* const m_handler = nullptr;
-    HandlerFuncPtr m_handler_func = nullptr;
+    Object* const m_object = nullptr;
+    ObjectFuncPtr m_object_func = nullptr;
 };
 
-template<class Handler, class ...Args>
-std::unique_ptr<QueuedInvokation<Handler, Args...>> make_queued_invokation_event(Handler* handler,
-                                                                void(Handler::*handler_func)(Args...),
-                                                                Args...args) {
-    return std::unique_ptr<QueuedInvokation<Handler, Args...>> (new QueuedInvokation<Handler, Args...>(handler, handler_func, std::move(args)...));
+template<class Object, class ...Args>
+std::unique_ptr<QueuedInvokation<Object, Args...>> make_queued_invokation_event(Object* object,
+                                                                                void(Object::*object_func)(Args...),
+                                                                                Args...args) {
+    return std::unique_ptr<QueuedInvokation<Object, Args...>> (new QueuedInvokation<Object, Args...>(object, object_func, std::move(args)...));
 }
 
-template<class Handler>
-std::unique_ptr<QueuedInvokation<Handler, void>> make_queued_invokation_event(Handler* handler,
-                                                                void(Handler::*handler_func)()) {
-    return std::unique_ptr<QueuedInvokation<Handler, void>>(new QueuedInvokation<Handler, void>(handler, handler_func));
+template<class Object>
+std::unique_ptr<QueuedInvokation<Object, void>> make_queued_invokation_event(Object* object,
+                                                                              void(Object::*object_func)()) {
+    return std::unique_ptr<QueuedInvokation<Object, void>>(new QueuedInvokation<Object, void>(object, object_func));
 }
 
 }

@@ -28,11 +28,11 @@ namespace {
 
 class RegisterEvent final : public Event {
 public:
-    RegisterEvent(Object* handler)
-        : m_handler(handler)
+    RegisterEvent(Object* object)
+        : m_object(object)
     {}
 
-    Object* m_handler = nullptr;
+    Object* m_object = nullptr;
 };
 
 }
@@ -85,24 +85,24 @@ int EventLoop::exec() {
     return loop();
 }
 
-void EventLoop::register_event_handler(Object *handler) {
+void EventLoop::register_object(Object *object) {
     // We queued the connection in order to not receive already queued events
-    // In other words the handler will receive all the events after his registration
-    std::unique_ptr<Event> event(new RegisterEvent(handler));
+    // In other words the object will receive all the events after his registration
+    std::unique_ptr<Event> event(new RegisterEvent(object));
     push_event(std::move(event));
 }
 
-void EventLoop::unregister_event_handler(Object *handler) {
-    Locker lock(m_handlers_mutex);
-    auto it = m_handlers.find(handler);
-    if (it != m_handlers.end())
+void EventLoop::unregister_object(Object *object) {
+    Locker lock(m_objects_mutex);
+    auto it = m_objects.find(object);
+    if (it != m_objects.end())
         it->second.value() = false;
 }
 
 void EventLoop::on_event(Event *event)
 {
     if (auto registerEvent = dynamic_cast<RegisterEvent*>(event)) {
-        m_handlers.emplace(registerEvent->m_handler, true);
+        m_objects.emplace(registerEvent->m_object, true);
     }
 }
 
@@ -138,8 +138,8 @@ int EventLoop::loop() {
         // Process events
         process_events(events);
 
-        // Remove event handlers "destroyed" from the map
-        cleanup_handlers();
+        // Remove objects "destroyed" from the map
+        cleanup_objects();
 
         events.clear();
     }
@@ -149,24 +149,24 @@ void EventLoop::process_events(const std::vector<std::unique_ptr<Event> > &event
 {
     for (const std::unique_ptr<Event>& event : events) {
         // Event loop events are processed before anything else
-        // because they can mutate the m_event_handlers map thus
+        // because they can mutate the objects map thus
         // invalidating the iterators
         on_event(event.get());
 
         // Evaluate all the other events
-        for (const auto& handler : m_handlers) {
-            if (handler.second.value())
-                handler.first->on_event(event.get());
+        for (const auto& object : m_objects) {
+            if (object.second.value())
+                object.first->on_event(event.get());
         }
     }
 }
 
-void EventLoop::cleanup_handlers()
+void EventLoop::cleanup_objects()
 {
-    Locker lock(m_handlers_mutex);
-    for (auto it = m_handlers.begin(); it != m_handlers.end(); ) {
+    Locker lock(m_objects_mutex);
+    for (auto it = m_objects.begin(); it != m_objects.end(); ) {
         if (!it->second.value()) {
-            it = m_handlers.erase(it);
+            it = m_objects.erase(it);
         } else {
             ++it;
         }

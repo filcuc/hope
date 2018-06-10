@@ -50,7 +50,7 @@ int Application::exec()
 void Application::on_event(Event *event)
 {
     if (auto signal_event = dynamic_cast<QueuedInvokationEventBase*>(event)) {
-        if (signal_event->event_handler() == this) {
+        if (signal_event->object() == this) {
             signal_event->invoke();
         }
     }
