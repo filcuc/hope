@@ -21,8 +21,8 @@
 
 #include <hope/object.h>
 #include <hope/eventloop.h>
-#include <hope/private/threaddata.h>
 
+#include <iostream>
 #include <cassert>
 #include <future>
 
@@ -126,7 +126,6 @@ void Thread::exec()
         m_mutex.lock();
         assert(m_state == State::Stopping);
         m_children.clear();
-        ThreadDataRegistry::instance().current_thread_data()->set_event_loop(nullptr);
         m_event_loop.reset();
         m_state = State::Stopped;
         m_cond.notify_all();

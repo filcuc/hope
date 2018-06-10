@@ -29,19 +29,26 @@ class Thread;
 
 namespace detail { class EventHandlerData; }
 
-class Object : public EventHandler {
+class Object {
 public:
     Object();
 
-    ~Object() override;
+    virtual ~Object();
 
     void move_to_thread(Thread* thread);
 
     void move_to_thread(std::thread::id thread);
 
-protected:
-    void on_event(Event *event) override;
+    virtual void on_event(Event *event);
 
+protected:
+    Object(bool initialize);
+
+    void initialize();
+    void terminate();
+
+    bool initialized = false;
+    bool terminated = false;
     std::shared_ptr<hope::detail::EventHandlerData> m_data;
 };
 

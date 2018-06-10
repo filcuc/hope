@@ -21,7 +21,7 @@
 
 #include <hope/private/atomicwrapper.h>
 #include <hope/event.h>
-#include <hope/eventhandler.h>
+#include <hope/object.h>
 
 #include <algorithm>
 #include <thread>
@@ -36,7 +36,7 @@ namespace hope {
 namespace detail { class EventHandlerData; }
 namespace test { class EventLoopTestHelper; }
 
-class EventLoop : public EventHandler {
+class EventLoop : public Object {
 public:
     using Clock = std::chrono::steady_clock;
     using Mutex = std::mutex;
@@ -56,9 +56,9 @@ public:
 
     int exec();
 
-    void register_event_handler(EventHandler* handler);
+    void register_event_handler(Object* handler);
 
-    void unregister_event_handler(EventHandler *handler);
+    void unregister_event_handler(Object* handler);
 
     void on_event(Event *event) final;
 
@@ -71,7 +71,6 @@ private:
 
     void cleanup_handlers();
 
-    std::shared_ptr<detail::EventHandlerData> m_data;
     int m_exit_code = 0;
     bool m_exit = false;
     bool m_is_running = false;
@@ -79,7 +78,7 @@ private:
     mutable Mutex m_handlers_mutex;
     std::condition_variable m_cond;
     std::multimap<TimePoint, std::unique_ptr<Event>> m_events;
-    std::map<EventHandler*, hope::detail::AtomicWrapper<bool>> m_handlers;
+    std::map<Object*, hope::detail::AtomicWrapper<bool>> m_handlers;
 };
 
 }

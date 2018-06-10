@@ -48,7 +48,7 @@ public:
         m_event_loop = event_loop;
     }
 
-    void register_event_handler(EventHandler* handler) {
+    void register_event_handler(Object* handler) {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_event_loop)
             m_event_loop->register_event_handler(handler);
@@ -56,7 +56,7 @@ public:
             std::cerr << "No event event loop when registering handler " << handler << std::endl;
     }
 
-    void unregister_event_handler(EventHandler* handler) {
+    void unregister_event_handler(Object* handler) {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_event_loop)
             m_event_loop->unregister_event_handler(handler);

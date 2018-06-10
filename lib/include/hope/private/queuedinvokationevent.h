@@ -26,11 +26,11 @@
 
 namespace hope {
 
-class EventHandler;
+class Object;
 
 class QueuedInvokationEventBase : public Event {
 public:
-    virtual EventHandler* event_handler() = 0;
+    virtual Object* event_handler() = 0;
     virtual void invoke() = 0;
 };
 
@@ -54,7 +54,7 @@ public:
     QueuedInvokation& operator=(const QueuedInvokation&) = delete;
     QueuedInvokation& operator=(QueuedInvokation&&) noexcept = default;
 
-    EventHandler* event_handler() final {
+    Object* event_handler() final {
         return m_handler;
     }
 
@@ -93,7 +93,7 @@ public:
     QueuedInvokation& operator=(const QueuedInvokation&) = delete;
     QueuedInvokation& operator=(QueuedInvokation&&) noexcept = default;
 
-    EventHandler* event_handler() final {
+    Object* event_handler() final {
         return m_handler;
     }
 

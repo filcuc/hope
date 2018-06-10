@@ -139,7 +139,7 @@ public:
         }
     }
 
-    template<typename Receiver, typename std::enable_if<std::is_base_of<EventHandler, Receiver>::value, int>::type = 0>
+    template<typename Receiver, typename std::enable_if<std::is_base_of<Object, Receiver>::value, int>::type = 0>
     Connection connect(Receiver* handler, void(Receiver::*func)(Args...args)) {
         std::lock_guard<std::mutex> lock(m_mutex);
         Connection result = get_next_connection_id();
@@ -158,7 +158,7 @@ public:
 
     template<typename Receiver,
              typename ReceiverMemFunc = void(Receiver::*)(Args...args),
-             typename std::enable_if<std::is_base_of<EventHandler, Receiver>::value, int>::type = 0>
+             typename std::enable_if<std::is_base_of<Object, Receiver>::value, int>::type = 0>
     void disconnect(Receiver* receiver, void(Receiver::*func)(Args...args)) {
         std::lock_guard<std::mutex> lock(m_mutex);
         for (auto it = m_handlers.begin(); it != m_handlers.end(); ++it) {

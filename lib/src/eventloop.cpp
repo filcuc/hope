@@ -28,31 +28,31 @@ namespace {
 
 class RegisterEvent final : public Event {
 public:
-    RegisterEvent(EventHandler* handler)
+    RegisterEvent(Object* handler)
         : m_handler(handler)
     {}
 
-    EventHandler* m_handler = nullptr;
+    Object* m_handler = nullptr;
 };
 
 }
 
 EventLoop::EventLoop()
-    : m_data(std::make_shared<EventHandlerData>(std::this_thread::get_id()))
+    : Object(false)
 {
-    EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
     {
         auto lock = m_data->lock();
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->set_event_loop(this);
     }
+    initialize();
 }
 
 EventLoop::~EventLoop() {
+    terminate();
     {
         auto lock = m_data->lock();
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->set_event_loop(nullptr);
     }
-    EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
 }
 
 bool EventLoop::is_running() const {
@@ -85,14 +85,14 @@ int EventLoop::exec() {
     return loop();
 }
 
-void EventLoop::register_event_handler(EventHandler *handler) {
+void EventLoop::register_event_handler(Object *handler) {
     // We queued the connection in order to not receive already queued events
     // In other words the handler will receive all the events after his registration
     std::unique_ptr<Event> event(new RegisterEvent(handler));
     push_event(std::move(event));
 }
 
-void EventLoop::unregister_event_handler(EventHandler *handler) {
+void EventLoop::unregister_event_handler(Object *handler) {
     Locker lock(m_handlers_mutex);
     auto it = m_handlers.find(handler);
     if (it != m_handlers.end())

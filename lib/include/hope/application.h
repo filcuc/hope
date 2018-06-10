@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <hope/eventhandler.h>
+#include <hope/object.h>
 #include <hope/eventloop.h>
 
 namespace hope {
@@ -27,7 +27,7 @@ namespace hope {
 namespace detail { class EventHandlerData; }
 namespace test { class ApplicationTestHelper; }
 
-class Application : public EventHandler {
+class Application : public Object {
 public:
     Application();
     ~Application() override;
@@ -42,7 +42,6 @@ public:
 private:
     friend class test::ApplicationTestHelper;
 
-    std::shared_ptr<detail::EventHandlerData> m_data;
     EventLoop m_event_loop;
 };
 

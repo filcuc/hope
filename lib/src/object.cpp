@@ -30,17 +30,34 @@
 using namespace hope;
 using namespace detail;
 
-Object::Object()
+Object::Object(bool init)
     : m_data(std::make_shared<EventHandlerData>(std::this_thread::get_id()))
 {
+    if (init)
+        initialize();
+}
+
+Object::Object()
+    : Object(true)
+{
+}
+
+void Object::initialize()
+{
+    if (initialized)
+        return;
     EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
     {
         auto lock = m_data->lock();
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->register_event_handler(this);
     }
+    initialized = true;
 }
 
-Object::~Object() {
+void Object::terminate()
+{
+    if (terminated)
+        return;
     {
         auto lock = m_data->lock();
         if (m_data->m_thread_id != std::this_thread::get_id()) {
@@ -49,6 +66,11 @@ Object::~Object() {
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_event_handler(this);
     }
     EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
+    terminated = true;
+}
+
+Object::~Object() {
+    terminate();
 }
 
 void Object::move_to_thread(Thread* thread) {

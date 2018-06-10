@@ -23,17 +23,17 @@ namespace hope {
 
 class Event;
 
-class EventHandler {
-public:
-    EventHandler() = default;
-    EventHandler(const EventHandler&) = delete;
-    EventHandler(EventHandler&&) = delete;
-    EventHandler& operator=(const EventHandler&) = delete;
-    EventHandler& operator=(EventHandler&&) = delete;
+//class EventHandler {
+//public:
+//    EventHandler() = default;
+//    EventHandler(const EventHandler&) = delete;
+//    EventHandler(EventHandler&&) = delete;
+//    EventHandler& operator=(const EventHandler&) = delete;
+//    EventHandler& operator=(EventHandler&&) = delete;
 
-    virtual ~EventHandler() = default;
+//    virtual ~EventHandler() = default;
 
-    virtual void on_event(Event* event) = 0;
-};
+//    virtual void on_event(Event* event) = 0;
+//};
 
 }

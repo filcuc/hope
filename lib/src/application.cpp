@@ -27,25 +27,14 @@ using namespace hope;
 using namespace detail;
 
 Application::Application()
-    : m_data(std::make_shared<EventHandlerData>(std::this_thread::get_id()))
+    : Object(false)
 {
-    EventHandlerDataRegistry::instance().register_event_handler_data(this, m_data);
-    {
-        auto lock = m_data->lock();
-        ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->register_event_handler(this);
-    }
+    initialize();
 }
 
 Application::~Application()
 {
-    {
-        auto lock = m_data->lock();
-        if (m_data->m_thread_id != std::this_thread::get_id()) {
-            std::cerr << "Destroying an application from different thread" << std::endl;
-        }
-        ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_event_handler(this);
-    }
-    EventHandlerDataRegistry::instance().unregister_event_handler_data(this);
+    terminate();
 }
 
 void Application::quit(int exit_code)

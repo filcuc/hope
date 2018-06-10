@@ -27,7 +27,7 @@
 
 namespace hope {
 
-class EventHandler;
+class Object;
 
 namespace detail {
 
@@ -86,22 +86,22 @@ public:
     EventHandlerDataRegistry& operator=(const EventHandlerDataRegistry&) = delete;
     EventHandlerDataRegistry& operator=(EventHandlerDataRegistry&&) = delete;
 
-    std::weak_ptr<EventHandlerData> data(EventHandler* handler) {
+    std::weak_ptr<EventHandlerData> data(Object* handler) {
         auto it = m_data.find(handler);
         return it != m_data.end() ? it->second : std::weak_ptr<EventHandlerData>();
     }
 
-    void register_event_handler_data(EventHandler* handler, const std::shared_ptr<EventHandlerData>& data) {
+    void register_event_handler_data(Object* handler, const std::shared_ptr<EventHandlerData>& data) {
         m_data.emplace(handler, data);
     }
 
-    void unregister_event_handler_data(EventHandler* handler) {
+    void unregister_event_handler_data(Object* handler) {
         m_data.erase(handler);
     }
 
 private:
     EventHandlerDataRegistry() = default;
-    std::map<EventHandler*, std::weak_ptr<EventHandlerData>> m_data;
+    std::map<Object*, std::weak_ptr<EventHandlerData>> m_data;
 };
 
 }
