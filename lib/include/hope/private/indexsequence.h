@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if 0
+#if (defined WIN32 && !defined _MSVC_LANG) || (!defined WIN32 && __cplusplus < 201402L)
 
 #include <cstddef>
 
