@@ -75,7 +75,7 @@ Object::~Object() {
 
 void Object::move_to_thread(Thread* thread) {
     if (!thread) {
-        std::cerr << "Passing null pointer to move to thread";
+        std::cerr << "Passing null pointer to move to thread" << std::endl;
         return;
     }
     move_to_thread(thread->id());

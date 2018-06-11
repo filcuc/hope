@@ -37,8 +37,6 @@ public:
 
     int exec();
 
-    void on_event(Event *event) final;
-
 private:
     friend class test::ApplicationTestHelper;
 

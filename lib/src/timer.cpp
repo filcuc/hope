@@ -66,7 +66,7 @@ void Timer::on_event(Event *event) {
         if (timer_event->m_timer == this) {
             m_triggered.emit();
         }
+    } else {
+        Object::on_event(event);
     }
-
-    Object::on_event(event);
 }

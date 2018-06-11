@@ -103,6 +103,8 @@ void EventLoop::on_event(Event *event)
 {
     if (auto registerEvent = dynamic_cast<RegisterEvent*>(event)) {
         m_objects.emplace(registerEvent->m_object, true);
+    } else {
+        Object::on_event(event);
     }
 }
 

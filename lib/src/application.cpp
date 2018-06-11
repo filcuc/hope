@@ -46,12 +46,3 @@ int Application::exec()
 {
     return m_event_loop.exec();
 }
-
-void Application::on_event(Event *event)
-{
-    if (auto signal_event = dynamic_cast<QueuedInvokationEventBase*>(event)) {
-        if (signal_event->object() == this) {
-            signal_event->invoke();
-        }
-    }
-}
