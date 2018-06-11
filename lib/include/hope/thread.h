@@ -32,19 +32,19 @@ class EventLoop;
 
 class Thread {
 public:
-	HOPE_API Thread();
+    HOPE_API Thread();
 
-	HOPE_API ~Thread();
+    HOPE_API ~Thread();
 
-	HOPE_API std::thread::id id() const;
+    HOPE_API std::thread::id id() const;
 
-	HOPE_API void start();
+    HOPE_API void start();
 
-	HOPE_API void quit();
+    HOPE_API void quit();
 
-	HOPE_API void wait();
+    HOPE_API void wait();
 
-	HOPE_API void move_to_thread(std::unique_ptr<Object> obj);
+    HOPE_API void move_to_thread(std::unique_ptr<Object> obj);
 
 private:
     void exec();

@@ -27,22 +27,18 @@ using namespace hope;
 using namespace detail;
 
 Application::Application()
-    : Object(false)
-{
+    : Object(false) {
     initialize();
 }
 
-Application::~Application()
-{
+Application::~Application() {
     terminate();
 }
 
-void Application::quit(int exit_code)
-{
-   m_event_loop.quit(exit_code);
+void Application::quit(int exit_code) {
+    m_event_loop.quit(exit_code);
 }
 
-int Application::exec()
-{
+int Application::exec() {
     return m_event_loop.exec();
 }

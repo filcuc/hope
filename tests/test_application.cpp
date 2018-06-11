@@ -53,7 +53,7 @@ TEST_F(ApplicationFixture, ExecTest) {
         a.exec();
     });
 
-    cond.wait(lock, [&]{ return app != nullptr; });
+    cond.wait(lock, [&] { return app != nullptr; });
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     ASSERT_TRUE(ApplicationTestHelper::event_loop(*app).is_running());
@@ -78,7 +78,7 @@ TEST_F(ApplicationFixture, QuitTest) {
         exit_code = a.exec();
     });
 
-    cond.wait(lock, [&]{ return app != nullptr; });
+    cond.wait(lock, [&] { return app != nullptr; });
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     ASSERT_TRUE(ApplicationTestHelper::event_loop(*app).is_running());

@@ -38,8 +38,7 @@ public:
 }
 
 EventLoop::EventLoop()
-    : Object(false)
-{
+    : Object(false) {
     {
         auto lock = m_data->lock();
         ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->set_event_loop(this);
@@ -85,22 +84,21 @@ int EventLoop::exec() {
     return loop();
 }
 
-void EventLoop::register_object(Object *object) {
+void EventLoop::register_object(Object* object) {
     // We queued the connection in order to not receive already queued events
     // In other words the object will receive all the events after his registration
     std::unique_ptr<Event> event(new RegisterEvent(object));
     push_event(std::move(event));
 }
 
-void EventLoop::unregister_object(Object *object) {
+void EventLoop::unregister_object(Object* object) {
     Locker lock(m_objects_mutex);
     auto it = m_objects.find(object);
     if (it != m_objects.end())
         it->second.value() = false;
 }
 
-void EventLoop::on_event(Event *event)
-{
+void EventLoop::on_event(Event* event) {
     if (auto registerEvent = dynamic_cast<RegisterEvent*>(event)) {
         m_objects.emplace(registerEvent->m_object, true);
     } else {
@@ -147,8 +145,7 @@ int EventLoop::loop() {
     }
 }
 
-void EventLoop::process_events(const std::vector<std::unique_ptr<Event> > &events)
-{
+void EventLoop::process_events(const std::vector<std::unique_ptr<Event> >& events) {
     for (const std::unique_ptr<Event>& event : events) {
         // Event loop events are processed before anything else
         // because they can mutate the objects map thus
@@ -163,8 +160,7 @@ void EventLoop::process_events(const std::vector<std::unique_ptr<Event> > &event
     }
 }
 
-void EventLoop::cleanup_objects()
-{
+void EventLoop::cleanup_objects() {
     Locker lock(m_objects_mutex);
     for (auto it = m_objects.begin(); it != m_objects.end(); ) {
         if (!it->second.value()) {

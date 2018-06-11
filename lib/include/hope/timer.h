@@ -29,17 +29,17 @@ namespace hope {
 
 class Timer final : public Object {
 public:
-	HOPE_API Timer();
+    HOPE_API Timer();
 
-	HOPE_API ~Timer() override;
+    HOPE_API ~Timer() override;
 
-	HOPE_API std::chrono::milliseconds duration() const;
+    HOPE_API std::chrono::milliseconds duration() const;
 
-	HOPE_API void set_duration(std::chrono::milliseconds duration);
+    HOPE_API void set_duration(std::chrono::milliseconds duration);
 
-	HOPE_API Signal<>& triggered();
+    HOPE_API Signal<>& triggered();
 
-	HOPE_API void start();
+    HOPE_API void start();
 
 protected:
     void on_event(Event* event) final;

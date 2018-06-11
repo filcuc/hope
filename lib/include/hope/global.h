@@ -20,21 +20,21 @@ along with the Hope library.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #ifdef WIN32
-	#if !defined(HOPE_USE_STATIC) && !defined(HOPE_USE_SHARED)
-		#error "Specify if your building a static or dynamic library with HOPE_USE_STATIC or HOPE_USE_SHARED"
-	#endif
+#if !defined(HOPE_USE_STATIC) && !defined(HOPE_USE_SHARED)
+#error "Specify if your building a static or dynamic library with HOPE_USE_STATIC or HOPE_USE_SHARED"
+#endif
 
-	#ifdef HOPE_USE_STATIC
-	#define HOPE_API
-	#endif 
+#ifdef HOPE_USE_STATIC
+#define HOPE_API
+#endif
 
-	#ifdef HOPE_USE_SHARED
-		#ifdef HOPE_EXPORT
-			#define HOPE_API __declspec(dllexport)
-		#else
-			#define HOPE_API __declspec(dllimport)
-		#endif
-	#endif
+#ifdef HOPE_USE_SHARED
+#ifdef HOPE_EXPORT
+#define HOPE_API __declspec(dllexport)
 #else
-	#define HOPE_API
+#define HOPE_API __declspec(dllimport)
+#endif
+#endif
+#else
+#define HOPE_API
 #endif

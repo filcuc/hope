@@ -33,19 +33,16 @@ using namespace detail;
 Object::Object(bool init)
     : m_initialized(false)
     , m_terminated(false)
-    , m_data(std::make_shared<ObjectData>(std::this_thread::get_id()))
-{
+    , m_data(std::make_shared<ObjectData>(std::this_thread::get_id())) {
     if (init)
         initialize();
 }
 
 Object::Object()
-    : Object(true)
-{
+    : Object(true) {
 }
 
-void Object::initialize()
-{
+void Object::initialize() {
     if (m_initialized.exchange(true))
         return;
     ObjectDataRegistry::instance().register_object_data(this, m_data);
@@ -55,8 +52,7 @@ void Object::initialize()
     }
 }
 
-void Object::terminate()
-{
+void Object::terminate() {
     if (m_terminated.exchange(true))
         return;
     {
@@ -81,8 +77,7 @@ void Object::move_to_thread(Thread* thread) {
     move_to_thread(thread->id());
 }
 
-void Object::move_to_thread(std::thread::id thread)
-{
+void Object::move_to_thread(std::thread::id thread) {
     auto lock = m_data->lock();
     ThreadDataRegistry::instance().thread_data(m_data->m_thread_id)->unregister_object(this);
     m_data->m_thread_id = thread;

@@ -110,13 +110,13 @@ private:
 template<class Object, class ...Args>
 std::unique_ptr<QueuedInvokation<Object, Args...>> make_queued_invokation_event(Object* object,
                                                                                 void(Object::*object_func)(Args...),
-                                                                                Args...args) {
+Args...args) {
     return std::unique_ptr<QueuedInvokation<Object, Args...>> (new QueuedInvokation<Object, Args...>(object, object_func, std::move(args)...));
 }
 
 template<class Object>
 std::unique_ptr<QueuedInvokation<Object, void>> make_queued_invokation_event(Object* object,
-                                                                              void(Object::*object_func)()) {
+void(Object::*object_func)()) {
     return std::unique_ptr<QueuedInvokation<Object, void>>(new QueuedInvokation<Object, void>(object, object_func));
 }
 

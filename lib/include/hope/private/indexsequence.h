@@ -31,7 +31,7 @@ struct index_sequence {
 
 template<std::size_t K, std::size_t ...Remainder>
 struct index_sequence_builder {
-    using result = typename index_sequence_builder<K-1, K-1, Remainder...>::result;
+    using result = typename index_sequence_builder < K - 1, K - 1, Remainder... >::result;
 };
 
 template<std::size_t ...Remainder>

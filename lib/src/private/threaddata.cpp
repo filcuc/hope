@@ -21,7 +21,7 @@
 
 using namespace hope;
 
-ThreadDataRegistry &ThreadDataRegistry::instance() {
+ThreadDataRegistry& ThreadDataRegistry::instance() {
     static ThreadDataRegistry instance;
     return instance;
 }

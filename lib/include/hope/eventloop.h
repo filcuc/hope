@@ -44,24 +44,24 @@ public:
     using Locker = std::unique_lock<Mutex>;
     using TimePoint = std::chrono::time_point<Clock>;
 
-	HOPE_API EventLoop();
-  
-	HOPE_API ~EventLoop() override;
+    HOPE_API EventLoop();
 
-	HOPE_API bool is_running() const;
+    HOPE_API ~EventLoop() override;
 
-	HOPE_API void push_event(std::unique_ptr<Event> event, TimePoint when = Clock::now());
-	HOPE_API void push_event(std::unique_ptr<Event> event, std::chrono::milliseconds duration, TimePoint offset = Clock::now());
+    HOPE_API bool is_running() const;
 
-	HOPE_API void quit(int exit_code = 0);
+    HOPE_API void push_event(std::unique_ptr<Event> event, TimePoint when = Clock::now());
+    HOPE_API void push_event(std::unique_ptr<Event> event, std::chrono::milliseconds duration, TimePoint offset = Clock::now());
 
-	HOPE_API int exec();
+    HOPE_API void quit(int exit_code = 0);
 
-	HOPE_API void register_object(Object* object);
+    HOPE_API int exec();
 
-	HOPE_API void unregister_object(Object* object);
+    HOPE_API void register_object(Object* object);
 
-	HOPE_API void on_event(Event *event) final;
+    HOPE_API void unregister_object(Object* object);
+
+    HOPE_API void on_event(Event* event) final;
 
 private:
     friend class EventLoopTestHelper;

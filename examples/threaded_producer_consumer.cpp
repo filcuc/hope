@@ -28,8 +28,7 @@ using namespace hope;
 using Product = std::string;
 
 struct Producer : public Object {
-    Producer()
-    {
+    Producer() {
         m_timer.set_duration(std::chrono::seconds(1));
         m_timer.triggered().connect(this, &Producer::on_triggered);
     }
@@ -70,8 +69,7 @@ struct Consumer : public Object {
     }
 };
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     Application app;
 
     std::unique_ptr<Consumer> consumer (new Consumer());

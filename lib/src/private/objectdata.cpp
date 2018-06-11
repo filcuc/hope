@@ -23,6 +23,6 @@ using namespace hope;
 using namespace detail;
 
 ObjectDataRegistry& ObjectDataRegistry::instance() {
-  static ObjectDataRegistry instance;
-  return instance;
+    static ObjectDataRegistry instance;
+    return instance;
 }

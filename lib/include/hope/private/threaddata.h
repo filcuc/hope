@@ -82,9 +82,9 @@ private:
 
 class ThreadDataRegistry {
 public:
-	HOPE_API static ThreadDataRegistry& instance();
+    HOPE_API static ThreadDataRegistry& instance();
 
-	HOPE_API std::shared_ptr<ThreadData> thread_data(const std::thread::id& id) {
+    HOPE_API std::shared_ptr<ThreadData> thread_data(const std::thread::id& id) {
         std::lock_guard<std::mutex> lock(m_mutex);
         auto it = m_registry.find(id);
         if (it == m_registry.end()) {
@@ -93,7 +93,7 @@ public:
         return it->second;
     }
 
-	HOPE_API std::shared_ptr<ThreadData> current_thread_data() {
+    HOPE_API std::shared_ptr<ThreadData> current_thread_data() {
         return thread_data(std::this_thread::get_id());
     }
 

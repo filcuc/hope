@@ -51,8 +51,8 @@ public:
         return std::unique_lock<std::mutex>(data.m_mutex);
     }
 
-    static std::pair<std::unique_lock<std::mutex>,std::unique_lock<std::mutex>> lock(const std::shared_ptr<ObjectData>& first,
-                                                                                     const std::shared_ptr<ObjectData>& second) {
+    static std::pair<std::unique_lock<std::mutex>, std::unique_lock<std::mutex>> lock(const std::shared_ptr<ObjectData>& first,
+    const std::shared_ptr<ObjectData>& second) {
         if (first && second)
             return lock(*first, *second);
         else if (first)
@@ -63,7 +63,7 @@ public:
             return { std::unique_lock<std::mutex>(), std::unique_lock<std::mutex>() };
     }
 
-    static std::pair<std::unique_lock<std::mutex>,std::unique_lock<std::mutex>> lock(ObjectData& first, ObjectData& second) {
+    static std::pair<std::unique_lock<std::mutex>, std::unique_lock<std::mutex>> lock(ObjectData& first, ObjectData& second) {
         ObjectData* first_address = &first;
         ObjectData* second_address = &second;
         if (first_address >= second_address)
@@ -81,23 +81,23 @@ public:
 
 class ObjectDataRegistry {
 public:
-	HOPE_API static ObjectDataRegistry& instance();
+    HOPE_API static ObjectDataRegistry& instance();
 
     ObjectDataRegistry(const ObjectDataRegistry&) = delete;
     ObjectDataRegistry(ObjectDataRegistry&&) = delete;
     ObjectDataRegistry& operator=(const ObjectDataRegistry&) = delete;
     ObjectDataRegistry& operator=(ObjectDataRegistry&&) = delete;
 
-	HOPE_API std::weak_ptr<ObjectData> data(Object* object) {
+    HOPE_API std::weak_ptr<ObjectData> data(Object* object) {
         auto it = m_data.find(object);
         return it != m_data.end() ? it->second : std::weak_ptr<ObjectData>();
     }
 
-	HOPE_API void register_object_data(Object* object, const std::shared_ptr<ObjectData>& data) {
+    HOPE_API void register_object_data(Object* object, const std::shared_ptr<ObjectData>& data) {
         m_data.emplace(object, data);
     }
 
-	HOPE_API void unregister_object_data(Object* object) {
+    HOPE_API void unregister_object_data(Object* object) {
         m_data.erase(object);
     }
 

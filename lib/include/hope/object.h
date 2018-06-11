@@ -33,21 +33,21 @@ namespace detail { class ObjectData; }
 
 class Object {
 public:
-	HOPE_API Object();
+    HOPE_API Object();
 
-	HOPE_API virtual ~Object();
+    HOPE_API virtual ~Object();
 
-	HOPE_API void move_to_thread(Thread* thread);
+    HOPE_API void move_to_thread(Thread* thread);
 
-	HOPE_API void move_to_thread(std::thread::id thread);
+    HOPE_API void move_to_thread(std::thread::id thread);
 
-	HOPE_API virtual void on_event(Event *event);
+    HOPE_API virtual void on_event(Event* event);
 
 protected:
-	HOPE_API Object(bool initialize);
+    HOPE_API Object(bool initialize);
 
-	HOPE_API void initialize();
-	HOPE_API void terminate();
+    HOPE_API void initialize();
+    HOPE_API void terminate();
 
     std::atomic<bool> m_initialized;
     std::atomic<bool> m_terminated;

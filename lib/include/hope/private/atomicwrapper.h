@@ -33,11 +33,11 @@ public:
     AtomicWrapper() = default;
 
     AtomicWrapper(T&& t)
-     : m_atomic(std::move(t))
+        : m_atomic(std::move(t))
     {}
 
     AtomicWrapper(const AtomicWrapper& other)
-     : m_atomic(other.m_atomic.load())
+        : m_atomic(other.m_atomic.load())
     {}
 
     AtomicWrapper(AtomicWrapper&& other) noexcept = delete;

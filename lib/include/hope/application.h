@@ -30,13 +30,13 @@ namespace test { class ApplicationTestHelper; }
 
 class Application : public Object {
 public:
-	HOPE_API Application();
-	HOPE_API ~Application() override;
+    HOPE_API Application();
+    HOPE_API ~Application() override;
 
-	HOPE_API void quit(int exit_code);
-	HOPE_API void quit() { quit(0); }
+    HOPE_API void quit(int exit_code);
+    HOPE_API void quit() { quit(0); }
 
-	HOPE_API int exec();
+    HOPE_API int exec();
 
 private:
     friend class test::ApplicationTestHelper;

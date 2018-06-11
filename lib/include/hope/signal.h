@@ -176,7 +176,7 @@ private:
         std::lock_guard<std::mutex> lock(m_mutex);
         return m_objects;
     }
-    
+
     Connection get_next_connection_id() {
         return m_next_connection_id++;
     }
