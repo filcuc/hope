@@ -21,6 +21,7 @@
 
 #include <hope/object.h>
 #include <hope/eventloop.h>
+#include <hope/global.h>
 
 namespace hope {
 
@@ -29,13 +30,13 @@ namespace test { class ApplicationTestHelper; }
 
 class Application : public Object {
 public:
-    Application();
-    ~Application() override;
+	HOPE_API Application();
+	HOPE_API ~Application() override;
 
-    void quit(int exit_code);
-    void quit() { quit(0); }
+	HOPE_API void quit(int exit_code);
+	HOPE_API void quit() { quit(0); }
 
-    int exec();
+	HOPE_API int exec();
 
 private:
     friend class test::ApplicationTestHelper;

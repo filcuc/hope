@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <hope/global.h>
+
 #include <condition_variable>
 #include <thread>
 #include <vector>
@@ -30,19 +32,19 @@ class EventLoop;
 
 class Thread {
 public:
-    Thread();
+	HOPE_API Thread();
 
-    ~Thread();
+	HOPE_API ~Thread();
 
-    std::thread::id id() const;
+	HOPE_API std::thread::id id() const;
 
-    void start();
+	HOPE_API void start();
 
-    void quit();
+	HOPE_API void quit();
 
-    void wait();
+	HOPE_API void wait();
 
-    void move_to_thread(std::unique_ptr<Object> obj);
+	HOPE_API void move_to_thread(std::unique_ptr<Object> obj);
 
 private:
     void exec();

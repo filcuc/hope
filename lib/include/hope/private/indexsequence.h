@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if __cplusplus < 201402L
+#if 0
 
 #include <cstddef>
 

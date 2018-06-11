@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <hope/global.h>
 #include <hope/object.h>
 #include <hope/signal.h>
 
@@ -28,17 +29,17 @@ namespace hope {
 
 class Timer final : public Object {
 public:
-    Timer();
+	HOPE_API Timer();
 
-    ~Timer() override;
+	HOPE_API ~Timer() override;
 
-    std::chrono::milliseconds duration() const;
+	HOPE_API std::chrono::milliseconds duration() const;
 
-    void set_duration(std::chrono::milliseconds duration);
+	HOPE_API void set_duration(std::chrono::milliseconds duration);
 
-    Signal<>& triggered();
+	HOPE_API Signal<>& triggered();
 
-    void start();
+	HOPE_API void start();
 
 protected:
     void on_event(Event* event) final;

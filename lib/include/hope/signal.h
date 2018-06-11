@@ -19,11 +19,12 @@
 
 #pragma once
 
-#include <hope/connection.h>
 #include <hope/private/objectdata.h>
 #include <hope/private/queuedinvokationevent.h>
 #include <hope/private/threaddata.h>
 #include <hope/private/optional.h>
+
+#include <hope/connection.h>
 
 #include <atomic>
 #include <cassert>

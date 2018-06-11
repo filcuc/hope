@@ -20,6 +20,8 @@
 #include <hope/application.h>
 #include <hope/timer.h>
 
+#include <string>
+
 using namespace hope;
 
 using Product = std::string;

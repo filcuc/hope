@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <hope/global.h>
+
 #include <map>
 #include <memory>
 #include <mutex>
@@ -79,28 +81,29 @@ public:
 
 class ObjectDataRegistry {
 public:
-    static ObjectDataRegistry& instance();
+	HOPE_API static ObjectDataRegistry& instance();
 
     ObjectDataRegistry(const ObjectDataRegistry&) = delete;
     ObjectDataRegistry(ObjectDataRegistry&&) = delete;
     ObjectDataRegistry& operator=(const ObjectDataRegistry&) = delete;
     ObjectDataRegistry& operator=(ObjectDataRegistry&&) = delete;
 
-    std::weak_ptr<ObjectData> data(Object* object) {
+	HOPE_API std::weak_ptr<ObjectData> data(Object* object) {
         auto it = m_data.find(object);
         return it != m_data.end() ? it->second : std::weak_ptr<ObjectData>();
     }
 
-    void register_object_data(Object* object, const std::shared_ptr<ObjectData>& data) {
+	HOPE_API void register_object_data(Object* object, const std::shared_ptr<ObjectData>& data) {
         m_data.emplace(object, data);
     }
 
-    void unregister_object_data(Object* object) {
+	HOPE_API void unregister_object_data(Object* object) {
         m_data.erase(object);
     }
 
 private:
     ObjectDataRegistry() = default;
+
     std::map<Object*, std::weak_ptr<ObjectData>> m_data;
 };
 

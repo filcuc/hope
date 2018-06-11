@@ -19,9 +19,11 @@
 
 #pragma once
 
+#include <hope/global.h>
+
 namespace hope {
 
-class Event {
+class HOPE_API Event {
 public:
     virtual ~Event() = default;
 };

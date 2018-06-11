@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <hope/global.h>
+
 #include <atomic>
 #include <thread>
 
@@ -31,21 +33,21 @@ namespace detail { class ObjectData; }
 
 class Object {
 public:
-    Object();
+	HOPE_API Object();
 
-    virtual ~Object();
+	HOPE_API virtual ~Object();
 
-    void move_to_thread(Thread* thread);
+	HOPE_API void move_to_thread(Thread* thread);
 
-    void move_to_thread(std::thread::id thread);
+	HOPE_API void move_to_thread(std::thread::id thread);
 
-    virtual void on_event(Event *event);
+	HOPE_API virtual void on_event(Event *event);
 
 protected:
-    Object(bool initialize);
+	HOPE_API Object(bool initialize);
 
-    void initialize();
-    void terminate();
+	HOPE_API void initialize();
+	HOPE_API void terminate();
 
     std::atomic<bool> m_initialized;
     std::atomic<bool> m_terminated;

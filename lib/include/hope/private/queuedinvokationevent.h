@@ -21,6 +21,7 @@
 
 #include <hope/private/indexsequence.h>
 #include <hope/event.h>
+#include <hope/global.h>
 
 #include <tuple>
 
@@ -28,7 +29,7 @@ namespace hope {
 
 class Object;
 
-class QueuedInvokationEventBase : public Event {
+class HOPE_API QueuedInvokationEventBase : public Event {
 public:
     virtual Object* object() = 0;
     virtual void invoke() = 0;
@@ -78,7 +79,7 @@ public:
 };
 
 template<class Object>
-class QueuedInvokation<Object, void> final : public QueuedInvokationEventBase {
+class HOPE_API QueuedInvokation<Object, void> final : public QueuedInvokationEventBase {
     using ObjectFuncPtr = void(Object::* const)();
 public:
     QueuedInvokation(Object* object,

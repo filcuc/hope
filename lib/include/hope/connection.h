@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <hope/global.h>
+
 #include <cstdint>
 
 namespace hope {
