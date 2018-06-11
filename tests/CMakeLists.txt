@@ -12,7 +12,7 @@ if(${GTEST_FOUND})
         helpers/applicationtesthelper.h
         helpers/eventlooptesthelper.h
     )
-    target_link_libraries(${TARGET_NAME} hopeStatic GTest::GTest GTest::Main)
+    target_link_libraries(${TARGET_NAME} hopeStatic gtest_main)
     include_directories(${CMAKE_SOURCE_DIR}/lib/include)
     if (UNIX)
       target_link_libraries(${TARGET_NAME} pthread)
