@@ -5,3 +5,10 @@ build_script:
   - cd build
   - cmake ..
   - cmake --build .
+  - dir
+  - dir bin
+
+test_script:
+  - dir
+  - cd build/bin
+  - hope-test.exe
