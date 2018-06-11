@@ -1,6 +1,7 @@
 # Hope 
 ## A simple pure C++11 event loop with signals and slots 
 [![Build Status](https://travis-ci.org/filcuc/hope.svg?branch=master)](https://travis-ci.org/filcuc/hope)
+[![Build status](https://ci.appveyor.com/api/projects/status/b2spyqd13op654j3?svg=true)](https://ci.appveyor.com/project/filcuc/hope)
 [![codecov](https://codecov.io/gh/filcuc/hope/branch/master/graph/badge.svg)](https://codecov.io/gh/filcuc/hope)
 
 
