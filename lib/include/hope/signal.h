@@ -96,12 +96,11 @@ struct Invoker final : public BaseInvoker<Args...> {
 
 private:
     Optional<std::thread::id> receiver_thread_id() const {
-        Optional<std::thread::id> result;
         if (auto data = ObjectDataRegistry::instance().data(m_receiver).lock()) {
             auto lock = ObjectData::lock(data);
-            result = data->m_thread_id;
-        }
-        return result;
+            return Optional<std::thread::id>(data->m_thread_id);
+        } 
+        return Optional<std::thread::id>();
     }
 
     bool is_receiver_alive() const {
