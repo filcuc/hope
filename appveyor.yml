@@ -3,12 +3,9 @@ clone_depth: 1
 build_script:
   - mkdir build
   - cd build
-  - cmake ..
+  - cmake .. -DCMAKE_BUILD_TYPE="Debug"
   - cmake --build .
-  - dir
-  - dir bin
 
 test_script:
-  - dir
-  - cd build/bin
+  - cd bin/Debug
   - hope-test.exe
