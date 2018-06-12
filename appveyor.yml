@@ -3,7 +3,7 @@ clone_depth: 1
 build_script:
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE="Debug"
+  - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DENABLE_TEST=ON
   - cmake --build .
 
 test_script:
