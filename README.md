@@ -47,7 +47,7 @@ The project require a working C++11 compiler
 mkdir build
 cd build 
 cmake ..
-make -j16
+cmake --build .
 ```
 
 ### Installing
