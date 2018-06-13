@@ -27,7 +27,9 @@ namespace detail {
 template<class T>
 class Optional {
 public:
-    Optional() = default;
+    Optional()
+        : m_ok(false) {
+    }
 
     Optional(T&& data)
         : m_ok(true)
