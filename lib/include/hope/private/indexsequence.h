@@ -19,11 +19,10 @@
 
 #pragma once
 
-#if (defined WIN32 && !defined _MSVC_LANG) || (!defined WIN32 && __cplusplus < 201402L)
-
 #include <cstddef>
 
-namespace std {
+namespace hope {
+namespace detail {
 
 template <std::size_t ... T>
 struct index_sequence {
@@ -43,9 +42,4 @@ template<std::size_t T>
 using make_index_sequence = typename index_sequence_builder<T>::result;
 
 }
-
-#else
-
-#include <utility>
-
-#endif
+}

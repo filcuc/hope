@@ -64,11 +64,11 @@ public:
     }
 
     template<typename Tuple, std::size_t... I>
-    void invoke_impl(Tuple& a, std::index_sequence<I...>) {
+    void invoke_impl(Tuple& a, hope::detail::index_sequence<I...>) {
         (m_object->*m_object_func)(std::move(std::get<I>(a))...);
     }
 
-    template<typename ...T, typename Indices = std::make_index_sequence<sizeof... (T)>>
+    template<typename ...T, typename Indices = hope::detail::make_index_sequence<sizeof... (T)>>
     void invoke_impl(std::tuple<T...>& t) {
         invoke_impl(t, Indices{});
     }
