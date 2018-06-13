@@ -26,8 +26,10 @@
 
 using namespace hope;
 
-static int num_calls = 0;
-static int last_value = 0;
+namespace {
+
+int num_calls = 0;
+int last_value = 0;
 
 class TestSender : public Object {
 public:
@@ -152,4 +154,6 @@ TEST_F(SignalFixture, TestAutoDisconnectionOnDestroy) {
     receiver.reset();
     sender.test_signal().emit();
     ASSERT_EQ(1, num_calls);
+}
+
 }

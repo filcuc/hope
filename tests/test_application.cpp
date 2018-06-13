@@ -25,6 +25,8 @@
 using namespace hope;
 using namespace test;
 
+namespace {
+
 class ApplicationFixture : public ::testing::Test {
 protected:
     virtual void SetUp() {
@@ -33,6 +35,7 @@ protected:
     std::mutex mutex;
     std::condition_variable cond;
 };
+
 
 TEST_F(ApplicationFixture, CreationTest) {
     Application app;
@@ -85,4 +88,6 @@ TEST_F(ApplicationFixture, QuitTest) {
     app->quit(EXPECTED_EXIT_CODE);
     t.join();
     ASSERT_EQ(exit_code, EXPECTED_EXIT_CODE);
+}
+
 }

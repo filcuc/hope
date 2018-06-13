@@ -28,6 +28,8 @@
 using namespace hope;
 using namespace test;
 
+namespace {
+
 using Clock = std::chrono::steady_clock;
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 using Milliseconds = std::chrono::milliseconds;
@@ -90,6 +92,7 @@ TEST_F(TimerFixture, TestTriggerSignal) {
     ASSERT_LT(duration, Milliseconds(2000));
 }
 
+}
 
 
 

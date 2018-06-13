@@ -7,6 +7,7 @@ add_executable(${TARGET_NAME}
   test_application.cpp
   test_timer.cpp
   test_signal.cpp
+  test_objectinvoker.cpp
   helpers/applicationtesthelper.h
   helpers/eventlooptesthelper.h
 )
