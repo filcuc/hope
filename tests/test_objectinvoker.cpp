@@ -55,11 +55,43 @@ protected:
     }
 };
 
-TEST_F(ObjectInvokerFixture, TestSimpleUsage) {
+TEST_F(ObjectInvokerFixture, TestAutoInvokation) {
     Application app;
     TestReceiver receiver;
-    hope::ObjectInvoker::invoke_auto(&receiver, &TestReceiver::test_receiver);
+    hope::ObjectInvoker::invoke(&receiver, &TestReceiver::test_receiver, ConnectionType::Auto);
     ASSERT_EQ(1, receiver.num_calls);
+}
+
+TEST_F(ObjectInvokerFixture, TestDirectInvokation) {
+    Application app;
+    TestReceiver receiver;
+    hope::ObjectInvoker::invoke(&receiver, &TestReceiver::test_receiver, ConnectionType::Auto);
+    ASSERT_EQ(1, receiver.num_calls);
+}
+
+TEST_F(ObjectInvokerFixture, TestQueuedInvokation) {
+    Application app;
+    TestReceiver receiver;
+    hope::ObjectInvoker::invoke(&receiver, &TestReceiver::test_receiver, ConnectionType::Queued);
+    hope::ObjectInvoker::invoke(&app, &Application::quit, ConnectionType::Queued);
+    ASSERT_EQ(0, receiver.num_calls);
+    app.exec();
+    ASSERT_EQ(1, receiver.num_calls);
+}
+
+TEST_F(ObjectInvokerFixture, TestQueuedBlockingInvokation) {
+    Application app;
+
+    auto receiver = new TestReceiver();
+    Thread t;
+    t.start();
+    t.move_to_thread(std::unique_ptr<TestReceiver>(receiver));
+
+    ASSERT_EQ(0, receiver->num_calls);
+    hope::ObjectInvoker::invoke(receiver, &TestReceiver::test_receiver, ConnectionType::QueuedBlocking);
+    ASSERT_EQ(1, receiver->num_calls);
+    t.quit();
+    t.wait();
 }
 
 }

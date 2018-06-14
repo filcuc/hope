@@ -34,6 +34,10 @@
 
 namespace hope {
 
+enum class ConnectionType {
+  Auto, Direct, Queued, QueuedBlocking
+};
+
 namespace detail {
 
 template<typename ...Args>
@@ -44,9 +48,7 @@ struct BaseInvoker {
 
     virtual ~BaseInvoker() = default;
 
-    virtual void invoke_auto(Args...args) const = 0;
-    virtual void invoke_direct(Args...args) const = 0;
-    virtual void invoke_queued(Args...args) const = 0;
+    virtual void invoke(Args... args) const = 0;
 
     virtual const void* receiver_pointer() const = 0;
     virtual const void* receiver_func_pointer() const = 0;
@@ -54,16 +56,35 @@ struct BaseInvoker {
     std::atomic<bool> m_valid;
 };
 
+
 template<class Receiver, typename ...Args>
 struct Invoker final : public BaseInvoker<Args...> {
     using ReceiverMemFunc = void(Receiver::*)(Args...);
 
-    Invoker(Receiver* receiver, ReceiverMemFunc receiver_func)
+    Invoker(Receiver* receiver, ReceiverMemFunc receiver_func, ConnectionType type)
         : m_receiver(receiver)
         , m_receiver_func(receiver_func)
+        , m_type(type)
     {}
 
-    void invoke_auto(Args...args) const final {
+    void invoke(Args...args) const final {
+        switch (m_type) {
+        case ConnectionType::Auto:
+            invoke_auto(std::move(args)...);
+            break;
+        case ConnectionType::Direct:
+            invoke_direct(std::move(args)...);
+            break;
+        case ConnectionType::Queued:
+            invoke_queued(std::move(args)...);
+            break;
+        case ConnectionType::QueuedBlocking:
+            invoke_queued_blocking(std::move(args)...);
+            break;
+        }
+    }
+
+    void invoke_auto(Args...args) const {
         if (Optional<std::thread::id> thread_id = receiver_thread_id()) {
             if (std::this_thread::get_id() != thread_id) {
                 invoke_queued(std::forward<Args>(args)...);
@@ -73,14 +94,22 @@ struct Invoker final : public BaseInvoker<Args...> {
         }
     }
 
-    void invoke_queued(Args...args) const final {
+    void invoke_queued(Args...args) const {
         if (Optional<std::thread::id> thread_id = receiver_thread_id()) {
             auto event = make_queued_invokation_event(m_receiver, m_receiver_func, std::move(args)...);
             ThreadDataRegistry::instance().thread_data(thread_id)->push_event(std::move(event));
         }
     }
 
-    void invoke_direct(Args...args) const final {
+    void invoke_queued_blocking(Args...args) const {
+        if (Optional<std::thread::id> thread_id = receiver_thread_id()) {
+            auto event = make_queued_invokation_event(m_receiver, m_receiver_func, std::move(args)...);
+            ThreadDataRegistry::instance().thread_data(thread_id)->push_event(event);
+            event->wait();
+        }
+    }
+
+    void invoke_direct(Args...args) const {
         if (is_receiver_alive()) {
             (m_receiver->*m_receiver_func)(std::move(args)...);
         }
@@ -109,12 +138,13 @@ private:
     }
 
     Receiver* const m_receiver = nullptr;
-    ReceiverMemFunc const m_receiver_func = nullptr;
+    const ReceiverMemFunc m_receiver_func = nullptr;
+    const ConnectionType m_type;
 };
 
 template<class Receiver, typename ...Args>
-std::shared_ptr<BaseInvoker<Args...>> make_invoker(Receiver* receiver, void(Receiver::*func)(Args...)) {
-    return std::make_shared<Invoker<Receiver, Args...>>(receiver, func);
+std::shared_ptr<BaseInvoker<Args...>> make_invoker(Receiver* receiver, void(Receiver::*func)(Args...), ConnectionType type) {
+    return std::make_shared<Invoker<Receiver, Args...>>(receiver, func, type);
 }
 
 }
@@ -134,16 +164,16 @@ public:
     void emit(Args... args) {
         for (const auto& pair : objects()) {
             if (pair.second->m_valid) {
-                pair.second->invoke_auto(std::move(args)...);
+                pair.second->invoke(std::move(args)...);
             }
         }
     }
 
     template<typename Receiver, typename std::enable_if<std::is_base_of<Object, Receiver>::value, int>::type = 0>
-    Connection connect(Receiver* receiver, void(Receiver::*func)(Args...args)) {
+    Connection connect(Receiver* receiver, void(Receiver::*func)(Args...args), ConnectionType type = ConnectionType::Auto) {
         std::lock_guard<std::mutex> lock(m_mutex);
         Connection result = get_next_connection_id();
-        m_objects.emplace(result, detail::make_invoker(receiver, func));
+        m_objects.emplace(result, detail::make_invoker(receiver, func, type));
         return result;
     }
 

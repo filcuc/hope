@@ -23,6 +23,7 @@
 #include <hope/event.h>
 #include <hope/global.h>
 
+#include <condition_variable>
 #include <tuple>
 
 namespace hope {
@@ -33,6 +34,7 @@ class HOPE_API QueuedInvokationEventBase : public Event {
 public:
     virtual Object* object() = 0;
     virtual void invoke() = 0;
+    virtual void wait() = 0;
 };
 
 template<class Object, class ...Args>
@@ -63,9 +65,15 @@ public:
         invoke_impl(m_object_func_args);
     }
 
+    void wait() final {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_cond.wait(lock, [this] { return m_executed; });
+    }
+
     template<typename Tuple, std::size_t... I>
     void invoke_impl(Tuple& a, hope::detail::index_sequence<I...>) {
         (m_object->*m_object_func)(std::move(std::get<I>(a))...);
+        set_executed();
     }
 
     template<typename ...T, typename Indices = hope::detail::make_index_sequence<sizeof... (T)>>
@@ -73,9 +81,20 @@ public:
         invoke_impl(t, Indices{});
     }
 
+    void set_executed() {
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_executed = true;
+        }
+        m_cond.notify_all();
+    }
+
     Object* const m_object = nullptr;
     ObjectFuncPtr m_object_func = nullptr;
     ObjectFuncArgs m_object_func_args;
+    std::mutex m_mutex;
+    std::condition_variable m_cond;
+    bool m_executed = false;
 };
 
 template<class Object>
@@ -100,24 +119,41 @@ public:
 
     void invoke() final {
         (m_object->*m_object_func)();
+        set_executed();
+    }
+
+    void wait() final {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_cond.wait(lock, [this] { return m_executed; });
     }
 
 private:
+    void set_executed() {
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_executed = true;
+        }
+        m_cond.notify_all();
+    }
+
     Object* const m_object = nullptr;
     ObjectFuncPtr m_object_func = nullptr;
+    std::mutex m_mutex;
+    std::condition_variable m_cond;
+    bool m_executed = false;
 };
 
 template<class Object, class ...Args>
-std::unique_ptr<QueuedInvokation<Object, Args...>> make_queued_invokation_event(Object* object,
+std::shared_ptr<QueuedInvokation<Object, Args...>> make_queued_invokation_event(Object* object,
                                                                                 void(Object::*object_func)(Args...),
 Args...args) {
-    return std::unique_ptr<QueuedInvokation<Object, Args...>> (new QueuedInvokation<Object, Args...>(object, object_func, std::move(args)...));
+    return std::make_shared<QueuedInvokation<Object, Args...>>(object, object_func, std::move(args)...);
 }
 
 template<class Object>
-std::unique_ptr<QueuedInvokation<Object, void>> make_queued_invokation_event(Object* object,
+std::shared_ptr<QueuedInvokation<Object, void>> make_queued_invokation_event(Object* object,
 void(Object::*object_func)()) {
-    return std::unique_ptr<QueuedInvokation<Object, void>>(new QueuedInvokation<Object, void>(object, object_func));
+    return std::make_shared<QueuedInvokation<Object, void>>(object, object_func);
 }
 
 }

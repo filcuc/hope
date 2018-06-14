@@ -50,8 +50,8 @@ public:
 
     HOPE_API bool is_running() const;
 
-    HOPE_API void push_event(std::unique_ptr<Event> event, TimePoint when = Clock::now());
-    HOPE_API void push_event(std::unique_ptr<Event> event, std::chrono::milliseconds duration, TimePoint offset = Clock::now());
+    HOPE_API void push_event(std::shared_ptr<Event> event, TimePoint when = Clock::now());
+    HOPE_API void push_event(std::shared_ptr<Event> event, std::chrono::milliseconds duration, TimePoint offset = Clock::now());
 
     HOPE_API void quit(int exit_code = 0);
 
@@ -68,7 +68,7 @@ private:
 
     int loop();
 
-    void process_events(const std::vector<std::unique_ptr<Event>>& events);
+    void process_events(const std::vector<std::shared_ptr<Event>>& events);
 
     void cleanup_objects();
 
@@ -78,7 +78,7 @@ private:
     mutable Mutex m_mutex;
     mutable Mutex m_objects_mutex;
     std::condition_variable m_cond;
-    std::multimap<TimePoint, std::unique_ptr<Event>> m_events;
+    std::multimap<TimePoint, std::shared_ptr<Event>> m_events;
     std::map<Object*, hope::detail::AtomicWrapper<bool>> m_objects;
 };
 

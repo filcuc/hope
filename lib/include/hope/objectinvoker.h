@@ -28,9 +28,9 @@ public:
     ObjectInvoker() = delete;
 
     template<typename Object, typename ...Args>
-    static void invoke_auto(Object* obj, void(Object::*func)(Args... args), Args...args) {
+    static void invoke(Object* obj, void(Object::*func)(Args... args), ConnectionType type, Args...args) {
         Signal<Args...> signal;
-        signal.connect(obj, func);
+        signal.connect(obj, func, type);
         signal.emit(args...);
     }
 };

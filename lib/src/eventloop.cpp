@@ -59,13 +59,13 @@ bool EventLoop::is_running() const {
     return m_is_running;
 }
 
-void EventLoop::push_event(std::unique_ptr<Event> event, EventLoop::TimePoint when) {
+void EventLoop::push_event(std::shared_ptr<Event> event, EventLoop::TimePoint when) {
     Locker lock(m_mutex);
     m_events.emplace(when, std::move(event));
     m_cond.notify_one();
 }
 
-void EventLoop::push_event(std::unique_ptr<Event> event,
+void EventLoop::push_event(std::shared_ptr<Event> event,
                            std::chrono::milliseconds duration,
                            EventLoop::TimePoint offset) {
     Locker lock(m_mutex);
@@ -112,7 +112,7 @@ int EventLoop::loop() {
         m_is_running = true;
     }
 
-    std::vector<std::unique_ptr<Event>> events;
+    std::vector<std::shared_ptr<Event>> events;
 
     while (true) {
         while (true) {
@@ -145,8 +145,8 @@ int EventLoop::loop() {
     }
 }
 
-void EventLoop::process_events(const std::vector<std::unique_ptr<Event> >& events) {
-    for (const std::unique_ptr<Event>& event : events) {
+void EventLoop::process_events(const std::vector<std::shared_ptr<Event> > &events) {
+    for (const std::shared_ptr<Event>& event : events) {
         // Event loop events are processed before anything else
         // because they can mutate the objects map thus
         // invalidating the iterators
