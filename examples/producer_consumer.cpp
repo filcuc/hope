@@ -41,7 +41,6 @@ struct Producer : public Object {
     }
 
     void produce() {
-
         m_timer.start();
     }
 

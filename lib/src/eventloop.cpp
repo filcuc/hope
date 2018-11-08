@@ -100,6 +100,7 @@ void EventLoop::unregister_object(Object* object) {
 
 void EventLoop::on_event(Event* event) {
     if (auto registerEvent = dynamic_cast<RegisterEvent*>(event)) {
+        Locker lock(m_objects_mutex);
         m_objects.emplace(registerEvent->m_object, true);
     } else {
         Object::on_event(event);
