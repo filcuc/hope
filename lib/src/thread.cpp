@@ -42,7 +42,7 @@ std::thread::id Thread::id() const {
 
 void Thread::start() {
     std::unique_lock<std::mutex> lock(m_mutex);
-    if (m_state == State::Starting || m_state == State::Starting) {
+    if (m_state == State::Started || m_state == State::Starting) {
         std::cerr << "Thread already started" << std::endl;
         return;
     }
