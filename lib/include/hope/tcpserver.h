@@ -36,6 +36,8 @@ public:
     int bind_port() const;
 
 private:
+    void on_client_connected();
+
     class TcpServerImpl;
     TcpServerImpl* m_impl = nullptr;
 };
