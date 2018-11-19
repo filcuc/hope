@@ -97,15 +97,33 @@ void PollWrapper::loop() {
                         return;
                     }
                     else if (auto register_event = dynamic_cast<RegisterObserverEvent*>(event)) {
+                        // Add observer
                         m_observers.emplace_back(std::move(register_event->data));
-                        m_descriptors.emplace_back({ register_event->data.file_descriptor,
-                                                   });
+                        // Add descriptor
+                        m_descriptors.push_back({register_event->data.file_descriptor,
+                                                 register_event->data.event_type == PollWrapper::ReadyRead ? POLLIN : POLLOUT,
+                                                 0});
                         delete event;
                     }
                     else if (auto unregister_event = dynamic_cast<UnregisterObserverEvent*>(event)) {
-                        auto it = std::find(m_observers.begin(), m_observers.end(), unregister_event->data);
-                        if (it != m_observers.end())
-                            m_observers.erase(it);
+                        // Remove from observers
+                        {
+                            auto it = std::find(m_observers.begin(), m_observers.end(), unregister_event->data);
+                            if (it != m_observers.end()) {
+                                m_observers.erase(it);
+                            }
+                        }
+                        // Remove descriptor
+                        {
+                            auto it = std::find_if(m_descriptors.begin(), m_descriptors.end(), [register_event](const pollfd& fd) -> bool {
+                                return fd.fd == register_event->data.file_descriptor
+                                    && fd.events == (register_event->data.event_type == PollWrapper::ReadyRead ? POLLIN : POLLOUT);
+                            });
+
+                            if (it != m_descriptors.end()) {
+                                m_descriptors.erase(it);
+                            }
+                        }
                         delete event;
                     }
                 }
