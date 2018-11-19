@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <algorithm>
 #include <iostream>
 
 namespace hope {
@@ -15,12 +16,19 @@ struct PollWrapperEvent {
 };
 
 struct RegisterObserverEvent : public PollWrapperEvent {
-    std::weak_ptr<hope::detail::ObjectData> object;
-    PollWrapper::EventType type;
+    RegisterObserverEvent(PollWrapper::ObserverData data)
+        : data(std::move(data))
+    {}
+
+    PollWrapper::ObserverData data;
 };
 
 struct UnregisterObserverEvent : public PollWrapperEvent {
-    std::weak_ptr<hope::detail::ObjectData> object;
+    UnregisterObserverEvent(PollWrapper::ObserverData data)
+        : data(std::move(data))
+    {}
+
+    PollWrapper::ObserverData data;
 };
 
 struct QuitEvent : public PollWrapperEvent {
@@ -32,33 +40,16 @@ PollWrapper &PollWrapper::instance() {
     return result;
 }
 
-void PollWrapper::register_observer(const std::shared_ptr<hope::detail::ObjectData> &object, EventType type) {
+void PollWrapper::register_observer(ObserverData data) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    auto ptr = new RegisterObserverEvent();
-    ptr->object = object;
-    ptr->type = type;
+    PollWrapperEvent* ptr = new RegisterObserverEvent(std::move(data));
     ::write(m_fifo_fd, &ptr, sizeof(ptr));
 }
 
-void PollWrapper::unregister_observer(const std::shared_ptr<hope::detail::ObjectData> &object)
-{
+void PollWrapper::unregister_observer(ObserverData data) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    auto ptr = new UnregisterObserverEvent();
-    ptr->object = object;
+    PollWrapperEvent* ptr = new UnregisterObserverEvent(std::move(data));
     ::write(m_fifo_fd, &ptr, sizeof(ptr));
-
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for (auto it = m_observers.begin(); it != m_observers.end(); ) {
-        if (auto ptr = it->first.lock()) {
-            if (ptr == object) {
-                it = m_observers.erase(it);
-            } else {
-                ++it;
-            }
-        } else {
-            it = m_observers.erase(it);
-        }
-    }
 }
 
 PollWrapper::PollWrapper()
@@ -67,10 +58,15 @@ PollWrapper::PollWrapper()
 
 PollWrapper::~PollWrapper() {
     if (m_thread.joinable()) {
-        uint8_t data = 1;
-        ::write(m_fifo_fd, &data, sizeof(uint8_t));
+        quit();
         m_thread.join();
     }
+}
+
+void PollWrapper::quit() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    PollWrapperEvent* ptr = new QuitEvent();
+    ::write(m_fifo_fd, &ptr, sizeof(ptr));
 }
 
 void PollWrapper::loop() {
@@ -88,15 +84,30 @@ void PollWrapper::loop() {
     for (;;) {
         const int poll_num = poll(m_descriptors.data(), m_descriptors.size(), -1);
         if (poll_num > 0) {
-            decltype (m_observers) observers;
-            {
-                std::lock_guard<std::mutex> lock(m_mutex);
-                observers = m_observers;
-            }
-
             for (const pollfd& fd : m_descriptors) {
                 if (fd.fd == m_fifo_fd) {
-                    return;
+                    PollWrapperEvent* event;
+                    auto read = ::read(m_fifo_fd, &event, sizeof(event));
+                    if (read != sizeof(event)) {
+                        std::cerr << "Failed to read an event" << std::endl;
+                        std::terminate();
+                    }
+                    if (dynamic_cast<QuitEvent*>(event)) {
+                        delete event;
+                        return;
+                    }
+                    else if (auto register_event = dynamic_cast<RegisterObserverEvent*>(event)) {
+                        m_observers.emplace_back(std::move(register_event->data));
+                        m_descriptors.emplace_back({ register_event->data.file_descriptor,
+                                                   });
+                        delete event;
+                    }
+                    else if (auto unregister_event = dynamic_cast<UnregisterObserverEvent*>(event)) {
+                        auto it = std::find(m_observers.begin(), m_observers.end(), unregister_event->data);
+                        if (it != m_observers.end())
+                            m_observers.erase(it);
+                        delete event;
+                    }
                 }
 
                 if (fd.revents & POLLIN || fd.revents & POLLPRI) {

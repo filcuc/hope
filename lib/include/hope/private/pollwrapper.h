@@ -36,10 +36,18 @@ class PollWrapper {
 public:
     enum EventType { ReadyRead, ReadyWrite };
 
+    struct ObserverData {
+        std::weak_ptr<hope::detail::ObjectData> object;
+        hope::detail::ObjectData* object_ptr;
+        int file_descriptor;
+        EventType event_type;
+    };
+
     static PollWrapper& instance();
 
-    void register_observer(const std::shared_ptr<hope::detail::ObjectData>& object, EventType type);
-    void unregister_observer(const std::shared_ptr<hope::detail::ObjectData>& object);
+    void register_observer(ObserverData data);
+
+    void unregister_observer(ObserverData data);
 
 private:
     PollWrapper();
@@ -48,12 +56,20 @@ private:
 
     void loop();
 
+    void quit();
+
     std::mutex m_mutex;
     FileDescriptor m_fifo_fd;
     std::vector<pollfd> m_descriptors;
     std::thread m_thread;
-    std::vector<std::pair<std::weak_ptr<hope::detail::ObjectData>, EventType>> m_observers;
+    std::vector<ObserverData> m_observers;
 };
+
+inline bool operator==(const PollWrapper::ObserverData& lhs, const PollWrapper::ObserverData& rhs) {
+    return lhs.event_type == rhs.event_type
+            && lhs.file_descriptor == rhs.file_descriptor
+            && lhs.object_ptr == rhs.object_ptr;
+}
 
 }
 }
