@@ -89,21 +89,29 @@ public:
     ObjectDataRegistry& operator=(ObjectDataRegistry&&) = delete;
 
     HOPE_API std::weak_ptr<ObjectData> data(Object* object) {
+        std::lock_guard<std::mutex> locker(m_mutex);
         auto it = m_data.find(object);
         return it != m_data.end() ? it->second : std::weak_ptr<ObjectData>();
     }
 
     HOPE_API void register_object_data(Object* object, const std::shared_ptr<ObjectData>& data) {
+        std::lock_guard<std::mutex> locker(m_mutex);
         m_data.emplace(object, data);
     }
 
     HOPE_API void unregister_object_data(Object* object) {
+        std::lock_guard<std::mutex> locker(m_mutex);
         m_data.erase(object);
+    }
+
+    static bool is_alive(Object* object) {
+        return ObjectDataRegistry::instance().data(object).lock() != nullptr;
     }
 
 private:
     ObjectDataRegistry() = default;
 
+    std::mutex m_mutex;
     std::map<Object*, std::weak_ptr<ObjectData>> m_data;
 };
 

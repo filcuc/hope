@@ -110,7 +110,7 @@ struct Invoker final : public BaseInvoker<Args...> {
     }
 
     void invoke_direct(Args...args) const {
-        if (is_receiver_alive()) {
+        if (ObjectDataRegistry::is_alive(m_receiver)) {
             (m_receiver->*m_receiver_func)(std::move(args)...);
         }
     }
@@ -131,10 +131,6 @@ private:
             result = data->m_thread_id;
         } 
         return result;
-    }
-
-    bool is_receiver_alive() const {
-        return ObjectDataRegistry::instance().data(m_receiver).lock() != nullptr;
     }
 
     Receiver* const m_receiver = nullptr;

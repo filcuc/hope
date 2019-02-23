@@ -155,7 +155,7 @@ void EventLoop::process_events(const std::vector<std::shared_ptr<Event> > &event
 
         // Evaluate all the other events
         for (const auto& object : m_objects) {
-            if (object.second.value())
+            if (ObjectDataRegistry::is_alive(object.first) && object.second.value())
                 object.first->on_event(event.get());
         }
     }
@@ -164,7 +164,7 @@ void EventLoop::process_events(const std::vector<std::shared_ptr<Event> > &event
 void EventLoop::cleanup_objects() {
     Locker lock(m_objects_mutex);
     for (auto it = m_objects.begin(); it != m_objects.end(); ) {
-        if (!it->second.value()) {
+        if (!it->second.value() || !ObjectDataRegistry::is_alive(it->first)) {
             it = m_objects.erase(it);
         } else {
             ++it;
