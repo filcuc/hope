@@ -16,6 +16,7 @@ set(CMAKE_CXX_STANDARD 11)
 # Add strict warning checking for C++
 if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
+    message(STATUS "ok")
 endif()
 
 # Set compiler options when coverage is enabled

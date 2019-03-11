@@ -8,7 +8,7 @@ namespace detail {
 FileDescriptorObserver::FileDescriptorObserver(FileDescriptor &descriptor, FileDescriptorObserver::EventType type)
     : m_file_descriptor(descriptor)
     , m_event_type(type) {
-    PollWrapper::instance().register_observer({m_data, m_data.get(), m_file_descriptor,
+    PollWrapper::instance().register_observer({m_data, m_data.get(), m_file_descriptor.fd(),
                                                m_event_type == ReadyRead ? PollWrapper::ReadyRead
                                                                          : PollWrapper::ReadyWrite });
 }
@@ -16,7 +16,7 @@ FileDescriptorObserver::FileDescriptorObserver(FileDescriptor &descriptor, FileD
 FileDescriptorObserver::~FileDescriptorObserver()
 {
     setEnabled(false);
-    PollWrapper::instance().unregister_observer({m_data, m_data.get(), m_file_descriptor,
+    PollWrapper::instance().unregister_observer({m_data, m_data.get(), m_file_descriptor.fd(),
                                                  m_event_type == ReadyRead ? PollWrapper::ReadyRead
                                                                            : PollWrapper::ReadyWrite });
 }

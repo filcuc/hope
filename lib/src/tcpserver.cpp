@@ -22,27 +22,28 @@
 #include <fcntl.h>
 
 #include <iostream>
+#include <memory>
 
 namespace hope {
 
 class TcpServer::TcpServerImpl {
 public:
     uint16_t bind_port;
+    std::unique_ptr<detail::FileDescriptorObserver> observer;
+    detail::FileDescriptor socket_fd;
 };
 
 TcpServer::TcpServer()
     : m_impl(new TcpServer::TcpServerImpl())
 {}
 
-TcpServer::~TcpServer()
-{
+TcpServer::~TcpServer() {
     delete m_impl;
 }
 
-bool TcpServer::listen(uint16_t bind_port)
-{
-    detail::FileDescriptor socket_fd = ::socket(AF_INET, SOCK_STREAM, 0);
-    if (!socket_fd) {
+bool TcpServer::listen(uint16_t bind_port) {
+    m_impl->socket_fd = ::socket(AF_INET, SOCK_STREAM, 0);
+    if (!m_impl->socket_fd.valid()) {
         return false;
     }
 
@@ -51,19 +52,19 @@ bool TcpServer::listen(uint16_t bind_port)
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(bind_port);
 
-    if (::bind(socket_fd, reinterpret_cast<struct sockaddr *>(&serv_addr), sizeof(serv_addr)) < 0) {
+    if (::bind(m_impl->socket_fd.fd(), reinterpret_cast<struct sockaddr *>(&serv_addr), sizeof(serv_addr)) < 0) {
         return false;
     }
 
-    if (::listen(socket_fd, 5) < 0) {
+    if (::listen(m_impl->socket_fd.fd(), 5) < 0) {
         return false;
     }
 
-    detail::FileDescriptorObserver observer(socket_fd, detail::FileDescriptorObserver::ReadyRead);
-    observer.activated().connect(this, &TcpServer::on_client_connected);
-    observer.setEnabled(true);
+    m_impl->observer.reset(new detail::FileDescriptorObserver(m_impl->socket_fd, detail::FileDescriptorObserver::ReadyRead));
+    m_impl->observer->activated().connect(this, &TcpServer::on_client_connected);
+    m_impl->observer->setEnabled(true);
 
-    return false;
+    return true;
 }
 
 void TcpServer::close()

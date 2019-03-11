@@ -22,8 +22,7 @@
 #include "hope/private/filedescriptor.h"
 #include "hope/private/objectdata.h"
 
-#include <poll.h>
-
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -49,6 +48,10 @@ public:
 
     void unregister_observer(ObserverData data);
 
+    struct PollWrapperEvent {
+        virtual ~PollWrapperEvent() = default;
+    };
+
 private:
     PollWrapper();
 
@@ -59,10 +62,10 @@ private:
     void quit();
 
     std::mutex m_mutex;
-    FileDescriptor m_fifo_fd;
-    std::vector<pollfd> m_descriptors;
+    std::vector<std::unique_ptr<PollWrapperEvent>> m_events;
     std::thread m_thread;
-    std::vector<ObserverData> m_observers;
+    FileDescriptor m_event_fd;
+    std::vector<hope::detail::PollWrapper::ObserverData> m_observers;
 };
 
 inline bool operator==(const PollWrapper::ObserverData& lhs, const PollWrapper::ObserverData& rhs) {

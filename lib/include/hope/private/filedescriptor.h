@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <unistd.h>
 
 namespace hope {
@@ -30,9 +31,23 @@ public:
         : m_fd(fd)
     {}
 
+    FileDescriptor(FileDescriptor&& other )
+        : m_fd(-1) {
+        std::swap(m_fd, other.m_fd);
+    }
+
     ~FileDescriptor() {
         reset();
     }
+
+    FileDescriptor& operator=(FileDescriptor&& other) {
+        std::swap(m_fd, other.m_fd);
+        return *this;
+    }
+
+    FileDescriptor& operator=(const FileDescriptor&) = delete;
+
+    FileDescriptor(const FileDescriptor&) = delete;
 
     void reset(int fd = -1) {
         if (m_fd != -1) {
@@ -46,12 +61,8 @@ public:
         return m_fd != -1;
     }
 
-    operator int() const {
+    int fd() const {
         return m_fd;
-    }
-
-    operator bool() const {
-        return valid();
     }
 
 private:
@@ -59,11 +70,11 @@ private:
 };
 
 static bool operator==(int other, const FileDescriptor& descriptor) {
-    return other == descriptor.operator int();
+    return other == descriptor.fd();
 }
 
 static bool operator!=(int other, const FileDescriptor& descriptor) {
-    return other != descriptor.operator int();
+    return other != descriptor.fd();
 }
 
 }

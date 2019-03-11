@@ -2,59 +2,56 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/eventfd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <cstring>
+#include <poll.h>
 
 #include <algorithm>
 #include <iostream>
+#include <cassert>
+
+namespace {
+
+constexpr const char* FIFO_NAME = "/tmp/hope-socket";
+
+struct RegisterObserverEvent : public hope::detail::PollWrapper::PollWrapperEvent {
+    RegisterObserverEvent(hope::detail::PollWrapper::ObserverData data)
+        : data(std::move(data))
+    {}
+
+    hope::detail::PollWrapper::ObserverData data;
+};
+
+struct UnregisterObserverEvent : public hope::detail::PollWrapper::PollWrapperEvent {
+    UnregisterObserverEvent(hope::detail::PollWrapper::ObserverData data)
+        : data(std::move(data))
+    {}
+
+    hope::detail::PollWrapper::ObserverData data;
+};
+
+struct QuitEvent : public hope::detail::PollWrapper::PollWrapperEvent {
+
+};
+
+}
 
 namespace hope {
 namespace detail {
-
-struct PollWrapperEvent {
-    virtual ~PollWrapperEvent() = default;
-};
-
-struct RegisterObserverEvent : public PollWrapperEvent {
-    RegisterObserverEvent(PollWrapper::ObserverData data)
-        : data(std::move(data))
-    {}
-
-    PollWrapper::ObserverData data;
-};
-
-struct UnregisterObserverEvent : public PollWrapperEvent {
-    UnregisterObserverEvent(PollWrapper::ObserverData data)
-        : data(std::move(data))
-    {}
-
-    PollWrapper::ObserverData data;
-};
-
-struct QuitEvent : public PollWrapperEvent {
-
-};
 
 PollWrapper &PollWrapper::instance() {
     static PollWrapper result;
     return result;
 }
 
-void PollWrapper::register_observer(ObserverData data) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    PollWrapperEvent* ptr = new RegisterObserverEvent(std::move(data));
-    ::write(m_fifo_fd, &ptr, sizeof(ptr));
-}
-
-void PollWrapper::unregister_observer(ObserverData data) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    PollWrapperEvent* ptr = new UnregisterObserverEvent(std::move(data));
-    ::write(m_fifo_fd, &ptr, sizeof(ptr));
-}
-
 PollWrapper::PollWrapper()
-    : m_thread([this]{ loop(); })
-{}
+    : m_event_fd(eventfd(0,0)) {
+    m_thread = std::thread([this]{loop();});
+}
 
 PollWrapper::~PollWrapper() {
     if (m_thread.joinable()) {
@@ -65,73 +62,88 @@ PollWrapper::~PollWrapper() {
 
 void PollWrapper::quit() {
     std::lock_guard<std::mutex> lock(m_mutex);
-    PollWrapperEvent* ptr = new QuitEvent();
-    ::write(m_fifo_fd, &ptr, sizeof(ptr));
+    m_events.emplace_back(new QuitEvent());
+    eventfd_write(m_event_fd.fd(), 1);
+}
+
+void PollWrapper::register_observer(ObserverData data) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_events.emplace_back(new RegisterObserverEvent(std::move(data)));
+    eventfd_write(m_event_fd.fd(), 1);
+}
+
+void PollWrapper::unregister_observer(ObserverData data) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_events.emplace_back(new UnregisterObserverEvent(std::move(data)));
+    eventfd_write(m_event_fd.fd(), 1);
 }
 
 void PollWrapper::loop() {
-    auto fifo_path = "/tmp/hope/poll";
-    ::mkfifo(fifo_path, 0666);
+    std::vector<struct pollfd> poll_list {{m_event_fd.fd(), POLLIN | POLLPRI, 0}};
 
-    m_fifo_fd = ::open(fifo_path, O_RDWR);
-    if (!m_fifo_fd) {
-        std::cerr << "Failed to open poll fifo" << std::endl;
-        std::terminate();
-    }
+    while (true) {
+        int num_changed = ::poll(poll_list.data(), poll_list.size(), -1);
+        if (num_changed <= 0)
+            continue;
 
-    m_descriptors.push_back({m_fifo_fd, POLLIN, 0});
+        for (const pollfd& fd : poll_list) {
+            const bool readable = (fd.revents & POLLIN) == POLLIN || (fd.revents & POLLPRI) == POLLPRI;
+            const bool writable = (fd.revents & POLLOUT) == POLLOUT;
 
-    for (;;) {
-        const int poll_num = poll(m_descriptors.data(), m_descriptors.size(), -1);
-        if (poll_num > 0) {
-            for (const pollfd& fd : m_descriptors) {
-                if (fd.fd == m_fifo_fd) {
-                    PollWrapperEvent* event;
-                    auto read = ::read(m_fifo_fd, &event, sizeof(event));
-                    if (read != sizeof(event)) {
-                        std::cerr << "Failed to read an event" << std::endl;
-                        std::terminate();
-                    }
-                    if (dynamic_cast<QuitEvent*>(event)) {
-                        delete event;
+            if (readable && fd.fd == m_event_fd.fd()) {
+                eventfd_t value = 0 ;
+                eventfd_read(m_event_fd.fd(), &value);
+
+                decltype (m_events) events;
+                m_mutex.lock();
+                std::swap(events, m_events);
+                m_mutex.unlock();
+
+                for (const std::unique_ptr<PollWrapperEvent>& ev : events) {
+                    if (auto quit = dynamic_cast<const QuitEvent*>(ev.get())) {
                         return;
                     }
-                    else if (auto register_event = dynamic_cast<RegisterObserverEvent*>(event)) {
-                        // Add observer
-                        m_observers.emplace_back(std::move(register_event->data));
-                        // Add descriptor
-                        m_descriptors.push_back({register_event->data.file_descriptor,
-                                                 register_event->data.event_type == PollWrapper::ReadyRead ? POLLIN : POLLOUT,
-                                                 0});
-                        delete event;
+                    else if (auto reg = dynamic_cast<const RegisterObserverEvent*>(ev.get())) {
+                        pollfd fd {};
+                        fd.fd = reg->data.file_descriptor;
+                        if (reg->data.event_type == PollWrapper::ReadyRead)
+                            fd.events = POLLIN | POLLPRI;
+                        else if (reg->data.event_type == PollWrapper::ReadyWrite)
+                            fd.events = POLLOUT;
+                        else
+                            continue;
+                        poll_list.push_back(fd);
+                        m_observers.push_back(reg->data);
                     }
-                    else if (auto unregister_event = dynamic_cast<UnregisterObserverEvent*>(event)) {
-                        // Remove from observers
+                    else if (auto unreg = dynamic_cast<const UnregisterObserverEvent*>(ev.get())) {
                         {
-                            auto it = std::find(m_observers.begin(), m_observers.end(), unregister_event->data);
-                            if (it != m_observers.end()) {
-                                m_observers.erase(it);
-                            }
-                        }
-                        // Remove descriptor
-                        {
-                            auto it = std::find_if(m_descriptors.begin(), m_descriptors.end(), [register_event](const pollfd& fd) -> bool {
-                                return fd.fd == register_event->data.file_descriptor
-                                    && fd.events == (register_event->data.event_type == PollWrapper::ReadyRead ? POLLIN : POLLOUT);
+                            auto it = std::find_if(poll_list.begin(), poll_list.end(), [&](const pollfd& fd){
+                                return fd.fd == unreg->data.file_descriptor;
                             });
-
-                            if (it != m_descriptors.end()) {
-                                m_descriptors.erase(it);
-                            }
+                            if (it != poll_list.end())
+                                poll_list.erase(it);
                         }
-                        delete event;
+                        {
+                            auto it = std::find_if(m_observers.begin(), m_observers.end(), [&](const PollWrapper::ObserverData& data){
+                                return data.file_descriptor == unreg->data.file_descriptor;
+                            });
+                            if (it != m_observers.end())
+                                m_observers.erase(it);
+                        }
                     }
                 }
-
-                if (fd.revents & POLLIN || fd.revents & POLLPRI) {
+            } else if (readable) {
+                auto observer = std::find_if(m_observers.begin(), m_observers.end(), [&](const PollWrapper::ObserverData& data) {
+                    return data.file_descriptor == fd.fd;
+                });
+                if (observer != m_observers.end()) {
                 }
 
-                if (fd.revents & POLLOUT) {
+            } else if (writable) {
+                auto observer = std::find_if(m_observers.begin(), m_observers.end(), [&](const PollWrapper::ObserverData& data) {
+                    return data.file_descriptor == fd.fd;
+                });
+                if (observer != m_observers.end()) {
                 }
             }
         }
