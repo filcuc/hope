@@ -14,18 +14,19 @@ jobs:
     - name: "Create build dir"
       run: mkdir build
     - name: "Invoke cmake"
+      working-directory: "build"
       run: cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON -DENABLE_TEST=ON
-      working-directory: "build"
     - name: "Build"
+      working-directory: "build"
       run: cmake --build .
-      working-directory: "build"
     - name: "Create baseline coverage"
-      run: lcov --directory . --capture --initial --output-file coverage_base.info
       working-directory: "build"
+      run: lcov --directory . --capture --initial --output-file coverage_base.info
     - name: "Invoke tests"
-      run: "./hope-test"
-      working-directory: "build/bin"
+      working-directory: "build"
+      run: "./bin/hope-test"
     - name: "Combine coverage"
+      working-directory: "build"
       run: |
         lcov --add-tracefile coverage_base.info --add-tracefile coverage_test.info --output-file coverage.info
         rm coverage_base.info
@@ -34,7 +35,6 @@ jobs:
         lcov --remove coverage.info "*/build/*" --output-file coverage.info
         lcov --remove coverage.info "*/tests/*" --output-file coverage.info
         lcov --remove coverage.info "*/examples/*" --output-file coverage.info
-      working-directory: "build"
     - name: Upload coverage
       uses: codecov/codecov-action@v1.0.5
       with:
