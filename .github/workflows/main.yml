@@ -9,6 +9,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: "Install lcov"
+      run: apt-get install -y lcov
     - name: "Create build dir"
       run: mkdir build
     - name: "Invoke cmake"
