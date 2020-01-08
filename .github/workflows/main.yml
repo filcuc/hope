@@ -37,6 +37,4 @@ jobs:
         lcov --remove coverage.info "*/tests/*" --output-file coverage.info
         lcov --remove coverage.info "*/examples/*" --output-file coverage.info
     - name: Upload coverage
-      uses: codecov/codecov-action@v1.0.5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }} 
+      run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }} 
