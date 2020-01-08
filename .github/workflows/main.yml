@@ -25,4 +25,16 @@ jobs:
     - name: "Invoke tests"
       run: "./hope-test"
       working-directory: "build/bin"
-    
+    - name: "Combine coverage"
+      run: |
+        lcov --add-tracefile coverage_base.info --add-tracefile coverage_test.info --output-file coverage.info
+        rm coverage_base.info
+        rm coverage_test.info
+        lcov --remove coverage.info "/usr/*" --output-file coverage.info
+        lcov --remove coverage.info "*/build/*" --output-file coverage.info
+        lcov --remove coverage.info "*/tests/*" --output-file coverage.info
+        lcov --remove coverage.info "*/examples/*" --output-file coverage.info
+    - name: Upload coverage
+      uses: codecov/codecov-action@v1.0.5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }} 
