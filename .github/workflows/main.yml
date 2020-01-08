@@ -12,6 +12,15 @@ jobs:
     - name: "Create build dir"
       run: mkdir build
     - name: "Invoke cmake"
-      run: cmake ..
+      run: cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON -DENABLE_TEST=ON
       working-directory: "build"
+    - name: "Build"
+      run: cmake --build .
+      working-directory: "build"
+    - name: "Create baseline coverage"
+      run: lcov --directory . --capture --initial --output-file coverage_base.info
+      working-directory: "build"
+    - name: "Invoke tests"
+      run: "./hope-test"
+      working-directory: "build/bin"
     
