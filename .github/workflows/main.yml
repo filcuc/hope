@@ -34,6 +34,7 @@ jobs:
         lcov --remove coverage.info "*/build/*" --output-file coverage.info
         lcov --remove coverage.info "*/tests/*" --output-file coverage.info
         lcov --remove coverage.info "*/examples/*" --output-file coverage.info
+      working-directory: "build"
     - name: Upload coverage
       uses: codecov/codecov-action@v1.0.5
       with:
